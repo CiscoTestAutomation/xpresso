@@ -26,8 +26,9 @@ engineering - and then made available to our customers, you, free of charge,
 and as a value-add to our products. The development team did their best to make
 the system modular and componentized, independent of Cisco internal tooling.
 
-If you do find, during your usage, oversights & bugs, please kindly report
-to us at pyats-support-ext@cisco.com.
+All we ask is that if you be patient with us, and if you find, during your usage, 
+oversights & bugs, please kindly report to us at pyats-support-ext@cisco.com, and 
+optionally work with the team to identify, classify and/or verify the fix. 
 
 > XPRESSO does not collect user statistics, and will not send telemetry of user
 > information back to Cisco.
