@@ -1,0 +1,21 @@
+# mac files
+.DS_Store
+
+# Python compiled files
+*.pyc
+*.pyo
+__pycache__/
+
+# Cython files
+*.c
+*.so
+
+# Developer files
+.project
+.pydevproject
+
+docker-compose.yml.bak
+data
+logs
+repos
+

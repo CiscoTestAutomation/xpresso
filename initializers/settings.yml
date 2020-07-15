@@ -1,0 +1,413 @@
+common:
+  ALLOWED_HOSTS: 
+  - '*'
+  APPEND_SLASH: false
+  AUTH_PASSWORD_VALIDATORS: []
+  CACHES:
+    default:
+      BACKEND: redis_cache.RedisCache
+      LOCATION: cache:6379
+      OPTIONS: 
+        DB: 1
+  CELERYD_TASK_SOFT_TIME_LIMIT: 3600
+  CELERYD_TASK_TIME_LIMIT: 7200
+  CELERY_BROKER_HOST: cache
+  CELERY_BROKER_PORT: 6379
+  CELERY_BROKER_TRANSPORT: redis
+  CELERY_BROKER_TRANSPORT_OPTIONS:
+    fanout_patterns: true
+    fanout_prefix: true
+    visibility_timeout: 864000
+  CELERY_REDIS_DB: 3
+  CELERY_REDIS_HOST: cache
+  CELERY_REDIS_PORT: 6379
+  CELERY_REDIS_VHOST: 3
+  CELERY_RESULT_BACKEND: redis
+  DATABASES:
+    default: 
+      ENGINE: django.db.backends.mysql
+      HOST: database
+      USER: s3_admin
+      PASSWORD: s3_PaSsW0Rd
+  DATETIME_FORMAT: '%Y-%m-%dT%H:%M:%S.%fZ'
+  DEBUG: true
+  ELASTICSEARCH: 
+  - elasticsearch:9200
+  EMAIL_DEFAULT_DOMAIN: cisco.com
+  EMAIL_HOST: mail.cisco.com
+  EXTERNAL_KAFKA_PRODUCER:
+    hosts: []
+    topics: 
+    - s3_requests
+    zookeepers: []
+  FEATURES: 
+    CDETS_SUPPORT: true
+    LOCAL_REGISTRATION: true
+    STAR_REDIRECT: true
+    TCL_ATS_SUPPORT: true
+    UPLOAD_TO_TRADE: true
+  JWT_TOKEN_PREFIX: Jwt
+  LANGUAGE_CODE: en-us
+  REDIS: 
+    DB: 0
+    HOST: cache
+    PORT: 6379
+  REST_FRAMEWORK:
+    DATETIME_FORMAT: '%Y-%m-%dT%H:%M:%S.%fZ'
+    DEFAULT_PAGINATION_CLASS: rest_framework.pagination.LimitOffsetPagination
+    DEFAULT_PARSER_CLASSES: 
+    - rest_framework.parsers.JSONParser
+    - rest_framework_xml.parsers.XMLParser
+    - rest_framework.parsers.FormParser
+    - rest_framework.parsers.MultiPartParser
+    DEFAULT_RENDERER_CLASSES: 
+    - rest_framework.renderers.JSONRenderer
+    - rest_framework_xml.renderers.XMLRenderer
+    NON_FIELD_ERRORS_KEY: detail
+    PAGE_SIZE: 10
+  SUPPORT_TCL_ATS: false
+  TIME_ZONE: UTC
+  USE_I18N: true
+  USE_L10N: true
+  USE_PROXY: true
+  USE_TZ: true
+  PYTHON_VERSIONS:
+    - '3.8.2'
+    - '3.8.1'
+    - '3.8.0'
+    - '3.7.7'
+    - '3.7.6'
+    - '3.7.5'
+    - '3.7.4'
+    - '3.7.3'
+    - '3.7.2'
+    - '3.7.1'
+    - '3.7.0'
+    - '3.6.10'
+    - '3.6.9'
+    - '3.6.8'
+    - '3.6.7'
+    - '3.6.6'
+    - '3.6.5'
+    - '3.6.4'
+    - '3.6.3'
+    - '3.6.2'
+    - '3.6.1'
+    - '3.6.0'
+    - '3.5.8'
+    - '3.5.7'
+    - '3.5.6'
+    - '3.5.5'
+    - '3.5.4'
+    - '3.5.3'
+    - '3.5.2'
+    - '3.5.1'
+    - '3.5.0'
+  PIP_CONFIG:
+    index-url: http://pyats-pypi.cisco.com/simple
+    trusted-host:
+      - pyats-pypi.cisco.com
+common_public:
+  GEN_USER: s3gen
+gateway:
+  CACHE: ''
+  CORS_DOMAINS: '*'
+  TIMEOUT: 30000
+  URL: http://gateway:8000/
+  WEBEX: 
+    access_token: Nzk5NDQxZTYtMmRkZS00MGYwLWEwZTQtYjJlMTk5NWM0MDllOGI5YmNmZDMtODdk_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f
+    host: 'https://api.ciscospark.com/v1'
+    room: Testing Bot
+microservices:
+  auths:
+    description: 'A service for authenticating users and services.'
+    url: http://auths:8000/auths/api/
+    settings:
+      API_TOKEN_LIFE_DAYS: 30
+      AUTHENTICATION_BACKENDS: 
+      - authms.backends.JwtTokenAuthentication
+      - authms.backends.ExtendedModelBackend
+      AUTOMATION_TOKEN_LIFE_DAYS: 36500
+      DATABASES:
+        default: 
+          NAME: s3_auths
+      LDAP_TIMEOUT: 10
+      SESSION_TOKEN_LIFE_HOURS: 3
+  clouds:
+    description: 'Resource management service'
+    url: http://clouds:8000/clouds/api/
+    settings:
+      CELERY_TASK_RESULT_EXPIRES: 30
+      DATABASES:
+        default: 
+          NAME: s3_clouds
+      PULL_IMAGE_TASK_TIMEOUT: 300
+      SPAWN_TASK_TIMEOUT: 30
+  communications:
+    description: 'A service for user to user messages, push notifications, and system alerts'
+    url: http://communications:8000/communications/api/
+    settings:
+      DATABASES:
+        default:
+          NAME: s3_communications
+  controller:
+    description: 'Highly scalable aiohttp-based cloud engine'
+    url: http://controller:8000/controller/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_controller
+      PERIODIC_SLEEP_TIME: 35
+      WORKER_HEALTH_TIMEOUT: 30
+      WORKS_PERIODIC_SLEEP_TIME: 25
+  genie:
+    description: 'Xpresso Genie microservice.'
+    url: http://genie:8000/genie/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_genie
+  groups:
+    description: 'A service for managing groups and permissions'
+    url: http://groups:8000/groups/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_groups
+      GROUP_PREFERENCE_DEFAULTS: 
+        DEFAULTS.DDTS: false
+        DEFAULTS.OS: ''
+        DEFAULTS.PROFILE.MAX_CLEAN_RUNTIME: 1800
+        DEFAULTS.PROFILE.MAX_RUNTIME: 43200
+        DEFAULTS.REQUESTS.ALLOW_EXECUTION_ON_DISABLED_EXECUTION_ENGINE: false
+        DEFAULTS.REQUESTS.MAX_WAIT_TIME: 43200
+        DEFAULTS.REQUESTS.PRIORITY: 4
+        DEFAULTS.REQUESTS.PRIORITY_POLICY_INTERVAL: 0
+        DEFAULTS.RESERVATION.PRIORITY: 4
+        DEFAULTS.RESERVATIONS.MAX_DURATION: 86400
+        DEFAULTS.RESERVATIONS.MAX_WAIT_TIME: 43200 
+        DEFAULTS.RESERVATIONS.MIN_DURATION: 1800
+        DEFAULTS.TESTBEDS.MAX_QUEUE_RETENTION: 43200
+        DEFAULTS.TRADE_POSTING: true
+        JOBS.MAX_RUNTIME: 86400
+        REPORTING.ENABLE_MESSAGE_ACTIVE: true
+        REPORTING.ENABLE_NOTIFICATION_TERMINAL: true
+        REQUESTS.MAX_WAIT_TIME: 43200
+        REQUESTS.PRIORITY_POLICY_MAX_LIMIT: 2
+        RESERVATIONS.MAX_DURATION: 86400
+        RESERVATIONS.MAX_WAIT_TIME: 43200 
+        RESERVATIONS.MIN_DURATION: 1800
+        TESTBEDS.MAX_QUEUE_RETENTION: 86400
+      INVITATION_EXPIRY: 3
+      REDIS_PREFERENCES_PREFIX: 'groups:preferences:'
+  history:
+    description: 'This service keeps a history of activities in S3'
+    url: http://history:8000/history/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_history
+      TOPIC: 
+        key: history_data
+        name: s3_history
+  jenkinsengine:
+    description: 'A service to launch runs against a Jenkins engine on various harnesses (such as easypy and kleenex).'
+    url: http://jenkinsengine:8000/jenkinsengine/api/
+    settings:
+      CELERY_BEAT_SCHEDULE:
+        jenkins_engine_callback_manager: 
+          schedule: 11
+          task: run.tasks.callback_manager.CallbackTask
+        jenkins_engine_health_monitor: 
+          schedule: 2
+          task: engine.tasks.engine_health.EngineHealthTask
+        jenkins_engine_run_monitor: 
+          schedule: 1
+          task: run.tasks.monitor.MonitorTask
+      DATABASES:
+        default: 
+          NAME: s3_jenkinsengine
+      JENKINS_ENGINE: 
+        BULK_DELETE_RETRY_DELAY_SECONDS: 60
+        CALLBACK_TIMEOUT_SECONDS: 15
+        CONSOLE_LOG_GET_TIMEOUT: 10
+        ENGINE_OFFLINE_DEMOTE_COUNT: 0
+        ENGINE_OFFLINE_DISABLE_COUNT: 30
+        ENGINE_OFFLINE_RECHECK_COUNT: 10
+        ENGINE_ONLINE_PROMOTE_COUNT: 0
+        ENGINE_ONLINE_RECHECK_COUNT: 5
+        MAX_BULK_DELETE_RETRIES: 1000
+        MAX_CALLBACK_RETRIES: 2
+        MAX_CONSOLE_LOG_SIZE_MB: 10
+        MAX_EXPECTED_CALLBACK_PROCESSING_LATENCY: 330
+        MAX_EXPECTED_ENGINE_HEALTH_PROCESSING_LATENCY: 300
+        MAX_EXPECTED_SUBMIT_BUILD_LATENCY: 60
+        MAX_SUBMIT_RETRIES: 5
+  laas:
+    description: 'A service layer to manage LaaS operations'
+    url: http://laas:8000/laas/api/
+    settings:
+      CELERY_LOCK_TIMEOUTS: 
+        MONITOR_INSTANCE_HEALTH_TIMEOUT: 300
+        SYNC_INSTANCES_TIMEOUT: 300
+      DATABASES:
+        default: 
+          NAME: s3_laas
+      LAAS_INSTANCE: 
+        INSTANCE_OFFLINE_DEMOTE_COUNT: 5
+        INSTANCE_ONLINE_PROMOTE_COUNT: 2
+        INSTANCE_UNKNOWN_DEMOTE_COUNT: 1
+        INSTANCE_UNKNOWN_PROMOTE_COUNT: 1
+      RESERVATION_LOCK_TIMEOUT: 30
+  labvpn:
+    description: 'A service for labvpn.'
+    url: http://labvpn:8000/labvpn/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_labvpn
+  monitors:
+    description: 'A service to manage monitoring instance'
+    url: http://monitors:8000/monitors/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_monitors
+      DOCKER_STOP_TIMEOUT: 30
+      INFLUXDB_DB: s3_monitors
+      INFLUXDB_HOST: influxdb:8086
+      INFLUXDB_MEASUREMENT: monitors
+      TS_LENGTH: 10
+      TS_PREFIX: MT
+  plugins:
+    description: 'Xpresso Plugins microservice.'
+    url: http://plugins:8000/plugins/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_plugins
+  qmgr:
+    description: 'This server allows creation of targets, and creation of items to queue against the targets.'
+    url: http://qmgr:8000/qmgr/api/
+    settings:
+      CALLBACK_PROCESSING_LATENCY: 60
+      CALLBACK_TIMEOUT_SECONDS: 15
+      CHECK_CORRECT_PROCESSING_LATENCY: 150
+      DATABASES:
+        default: 
+          NAME: s3_qmgr
+      DELETE_ITEM_PROCESSING_LATENCY: 150
+      DISPATCH_PROCESSING_LATENCY: 150
+      EXPIRY_PROCESSING_LATENCY: 60
+      MAX_CALLBACK_RETRIES: 2
+      MAX_RESERVATION_TIME: 86400
+      MAX_RETENTION_PERIOD_SECONDS: 604800
+      QUEUED_ITEM_PROCESSING_LATENCY: 150
+      RESERVATION_LIMIT: 90
+      RSVP_LENGTH: 10
+      RSVP_PREFIX: RS
+      SIGNAL_PROCESSING_LATENCY: 150
+      TOPIC: 
+        key: qmgr_data
+        name: s3_qmgr
+  registry:
+    description: 'A generic service for harnesses, jobs, profiles and metadata (os, platform and branch) registration.'
+    url: http://registry:8000/registry/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_registry
+      CLEAN_IMAGE_ROLES: 
+      - sys
+      - kick
+  requests:
+    description: 'An awesome s3 request service'
+    url: http://requests:8000/requests/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_requests
+      REQUEST_ID_SEPARATOR: '-'
+      REQ_LENGTH: 10
+      REQ_PREFIX: REQ
+      TOPIC: 
+        key: request_data
+        name: s3_requests
+  resources:
+    description: 'Resource management service'
+    url: http://resources:8000/resources/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_resources
+  results:
+    description: 'A service for viewing run results and associated data'
+    url: http://results:8000/results/api/
+    settings:
+      ARCHIVE_CACHE_RETENTION_DAYS: 7
+      CACHED_RESULT_FILE: parsed_script.json
+      DATABASES:
+        default: 
+          NAME: s3_results
+      FILE_READ_SIZE: 10240
+      MESSAGE_READ_SIZE: 100
+  sessions:
+    description: 's3 session management microservice'
+    url: http://sessions:8000/sessions/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_sessions
+      SESSION_TTL: 43200
+  testbeds:
+    description: 'A service for managing testbeds within S3'
+    url: http://testbeds:8000/testbeds/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_testbeds
+  topoman:
+    description: 'A service for topology manager configuration.'
+    url: http://topoman:8000/topoman/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_topoman
+      RESERVATION_LENGTH: 10
+      RESERVATION_PREFIX: RS
+      RESERVATION_SYNC_TIMEOUT: 180
+      TESTBED_PREFIX: TB
+      TOPIC: 
+        key: topoman_data
+        name: s3_topoman
+  users:
+    description: 'users microservice'
+    url: http://users:8000/users/api/
+    settings:
+      ALLOW_NEW_USERS: true
+      BLOCK_LDAP: false
+      DATABASES:
+        default: 
+          NAME: s3_users
+      LDAP_TIMEOUT: 10
+      TOPIC: 
+        key: users_data
+        name: s3_users
+  cdets:
+    description: 'A service for updating CDETS bugs through xpresso new'
+    url: http://cdets:8000/cdets/api/
+    settings:
+      MID_RETRY_COUNT: 50
+      MAX_RETRY_COUNT: 10
+      RETRY_SLOW_INTERVAL: 300
+      RETRY_MEDIUM_INTERVAL: 120
+      BUFFER_THROTTLE: 5
+      REQUEST_TIMEOUT: 60
+      DATABASES:
+        default:
+          NAME: s3_cdets
+      REQUEST_CALL_STACK:
+        item_states:
+          - FINALIZING
+        service_url: v1/reports
+        description: optional
