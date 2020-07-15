@@ -190,6 +190,7 @@ docker-compose restart resources
 The problem should go away. 
 
 **Cannot Login using default `admin/admin`**
+
 Wait a bit more, or `docker-compose restart users auths`. The initial bootup 
 performs a lot of first-start settings and database migrations, and could fail
 due to running on a slow server.
