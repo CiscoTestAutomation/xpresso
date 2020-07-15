@@ -93,6 +93,8 @@ server, eg, `http://xpresso.yourdomain.com/`.
 
 You're good to go:
 ```bash
+cd /workspace/xpresso
+
 # pull the latest images
 docker-compose pull
 
