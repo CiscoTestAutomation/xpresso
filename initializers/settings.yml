@@ -27,14 +27,14 @@ common:
     default: 
       ENGINE: django.db.backends.mysql
       HOST: database
-      USER: s3_admin
-      PASSWORD: s3_PaSsW0Rd
+      USER: xpresso_admin
+      PASSWORD: XPRESS0_123
   DATETIME_FORMAT: '%Y-%m-%dT%H:%M:%S.%fZ'
   DEBUG: true
   ELASTICSEARCH: 
   - elasticsearch:9200
-  EMAIL_DEFAULT_DOMAIN: cisco.com
-  EMAIL_HOST: mail.cisco.com
+  EMAIL_DEFAULT_DOMAIN: ""
+  EMAIL_HOST: ""
   EXTERNAL_KAFKA_PRODUCER:
     hosts: []
     topics: 

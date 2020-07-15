@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 # Django secret key
 # (django fails to start without this)
 # (we should not be using this feature in internal source codes)
-SECRET_KEY = 'xbd7o9ud=aez#^q4nf#z4f&41_k)760!cqncb!=ynec#og_l_v'
+SECRET_KEY = 'ingh@z0l($25krankw@=b#&5xoq&txi1lj(4qny$0t@=k-_v2^'
 
 # source code location
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -94,8 +94,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 's3_management',
         'HOST': 'database',
-        'USER': 's3_admin',
-        'PASSWORD': 's3_PaSsW0Rd'
+        'USER': 'xpresso_admin',
+        'PASSWORD': 'XPRESS0_123'
     },
 
 }
@@ -127,6 +127,6 @@ LOGGING = {
 
 # Cisco OAuth Registry - COAR
 # ---------------------------
-COAR_CONSUMER_KEY = "b8a41230-8330-4fe4-b183-ad648f19869d"
-COAR_CONSUMER_SECRET = "W59XitgBYGLDGK94TD2PmHcQhvmlYTXF"
-COAR_CONSUMER_ID = "kel2"
+COAR_CONSUMER_KEY = ""
+COAR_CONSUMER_SECRET = ""
+COAR_CONSUMER_ID = ""

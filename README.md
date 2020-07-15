@@ -102,6 +102,13 @@ docker-compose pull
 docker-compose up -d
 ```
 
+You should be able to access XPRESSO now at http://localhost/. Enjoy!
+
+> It may take a while for the initial settings to be automatically applied while
+> the system boots for the first time. This may mean you could not login using
+> the default credentials for a few minutes. Give it some time (eg, 5-10min on
+> a 2016 MacBook Pro 15)
+
 ## Administrator Login
 
 XPRESSO will automatically creates a default `admin` user at startup.
@@ -124,3 +131,21 @@ Put the .key and .pem files under `${BASE_DIR}/etc/` and update
 
 Once XPRESSO is running, the full user documentation is available directly in 
 the UI.
+
+## Data & Logs
+
+By default, all your data and services logs are stored under `./data/` and
+ `./logs/` directory, including database files, archives uploaded, etc. To
+ wipe the server and "start from scratch" again, just delete these folders.
+ 
+ No data is saved in the containers - everything is volume mounted to disk.
+
+
+## Common Questions & Answers
+
+**Why are there references (eg, in logs) to S3?**
+Initially XPRESSO was called S3, with the number 3 being a superscript 
+(eg, S-cubed), short for "self-serving-services". As this confused some folks 
+with Amazon S3 services, we renamed the pyATS web dashboard service to XPRESSO,
+expressing our love for coffee.
+
