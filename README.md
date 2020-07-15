@@ -141,11 +141,22 @@ By default, all your data and services logs are stored under `./data/` and
  No data is saved in the containers - everything is volume mounted to disk.
 
 
-## Common Questions & Answers
+## Common Issues, Questions & Answers
 
 **Why are there references (eg, in logs) to S3?**
+
 Initially XPRESSO was called S3, with the number 3 being a superscript 
 (eg, S-cubed), short for "self-serving-services". As this confused some folks 
 with Amazon S3 services, we renamed the pyATS web dashboard service to XPRESSO,
 expressing our love for coffee.
 
+**Error: No Resources Found**
+
+This occurs when the resource management service did not boot up properly. It
+happens usually when the server you are launching on is a bit slow. Try the 
+following:
+
+```bash
+docker-compose restart resources
+```
+The problem should go away. 
