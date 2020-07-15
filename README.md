@@ -86,6 +86,7 @@ server, eg, `http://xpresso.yourdomain.com/`.
 * At file `${BASE_DIR}/.env` make sure `DATA_DIR` and `LOGS_DIR` have proper values and pointing to your desired locations.
   * `DATA_DIR` should be somewhere with sufficient disk space for XPRESSO data.
   * `LOGS_DIR` should be somewhere with sufficient disk space for XPRESSO micros-ervices logs.
+  * If data-dir is changed, you may have to update `workers` service data dir as well. Find `workers` service at `docker-compose.yml` file and update ``WORK_SOURCE`` environment variable pointing to the proper dir. 
 * [ WARNING ]: in linux servers, uncomment the `/etc/localtime:/etc/localtime:ro` and `/etc/timezone:/etc/timezone:ro` entries under volumes for all services.
 * [ OPTIONAL ]: at file `${BASE_DIR}/.env`, change `TAG` to most appropriate value for your XPRESSO instance.
 * [ OPTIONAL ]: by default no ports are exposed in Docker. For your testing purposes, you can uncomment the `ports` entry in `docker-compose.yml` file for the services you want. 

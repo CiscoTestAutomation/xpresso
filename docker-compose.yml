@@ -1112,6 +1112,8 @@ services:
     hostname: workers
     restart: always
     env_file: env/workers.env
+    environment:
+      WORK_SOURCE: $PWD/data/workers
     volumes:
     - ${LOGS_DIR}/workers:/s3/logs
     - ${DATA_DIR}/workers:/s3/workers
