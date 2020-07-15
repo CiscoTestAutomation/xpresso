@@ -1,6 +1,3 @@
-# mac files
-.DS_Store
-
 # Python compiled files
 *.pyc
 *.pyo
@@ -13,9 +10,46 @@ __pycache__/
 # Developer files
 .project
 .pydevproject
+.vscode/
 
-docker-compose.yml.bak
-data
-logs
-repos
+# Swap files (VI)
+*.sw*
 
+# backup files
+*.bak
+
+# rope project files
+*.ropeproject
+# temp files
+*~
+
+# mac files
+.DS_Store
+
+# local doc
+doc/
+
+#temp xml
+aereport/temp.xml
+
+#build folder
+__build__/
+*.egg-info
+dist/
+build/
+
+# coverage data
+htmlcov/
+.coverage*
+
+# Extra files placed by cisco_shared into examples
+pkgs/examples-pkg/examples/dyntopo_laas
+pkgs/examples-pkg/examples/dyntopo_xrut
+pkgs/examples-pkg/examples/abstraction_example
+pkgs/examples-pkg/examples/genie
+
+# Files resulting from a git meld merge
+*.orig
+
+# vscode
+.vscode

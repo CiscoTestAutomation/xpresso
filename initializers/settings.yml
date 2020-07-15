@@ -104,9 +104,7 @@ common:
     - '3.5.1'
     - '3.5.0'
   PIP_CONFIG:
-    index-url: http://pyats-pypi.cisco.com/simple
-    trusted-host:
-      - pyats-pypi.cisco.com
+    index-url: https://pypi.org/simple
 common_public:
   GEN_USER: s3gen
 gateway:
@@ -114,10 +112,7 @@ gateway:
   CORS_DOMAINS: '*'
   TIMEOUT: 30000
   URL: http://gateway:8000/
-  WEBEX: 
-    access_token: Nzk5NDQxZTYtMmRkZS00MGYwLWEwZTQtYjJlMTk5NWM0MDllOGI5YmNmZDMtODdk_PF84_1eb65fdf-9643-417f-9974-ad72cae0e10f
-    host: 'https://api.ciscospark.com/v1'
-    room: Testing Bot
+
 microservices:
   auths:
     description: 'A service for authenticating users and services.'
