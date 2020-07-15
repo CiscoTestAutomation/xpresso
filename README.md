@@ -89,7 +89,21 @@ server, eg, `http://xpresso.yourdomain.com/`.
 * [ OPTIONAL ]: at file `${BASE_DIR}/.env`, change `TAG` to most appropriate value for your XPRESSO instance.
 * [ OPTIONAL ]: by default no ports are exposed in Docker. For your testing purposes, you can uncomment the `ports` entry in `docker-compose.yml` file for the services you want. 
 
-**3. Start Your Engine**
+**3. Cloud Worker Setup**
+
+In order to run ``pyATS`` jobs in xpresso, it needs to have the Cloud Worker up and running. The ``workers`` service in docker-compose file needs a PUBLIC_KEY from Xpresso, which is the public key of Cloud Controller service. 
+
+#### How to obtain PUBLIC_KEY
+* Login the xpresso dashboard and go to ``Profile > API Token`` to get your authentication token. Then, copy the token.
+* Make an http request using curl to get Xpresso to obtain Cloud public key. 
+* * ``curl -H "Authorization: $API_TOKEN" -H "Content-Type: application/json" http://localhost/controller/api/v1/public/keys``. 
+
+Get the `public_key` form response, and modify the ``env/workers.env`` with the new pubic key and restart `workers` service. 
+
+Before starting workers service, you may also need to update the ``WORK_SOURCE`` to pointing to the current dir or any other dir you want. eng., ``WORK_SOURCE=/xpresso/data/workers`` to ``WORK_SOURCE=/mycustomdir/data/workers``. 
+
+
+**4. Start Your Engine**
 
 You're good to go:
 ```bash

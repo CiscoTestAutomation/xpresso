@@ -1107,4 +1107,19 @@ services:
     ports:
     - 80:80
     - 443:443
-  
+  workers:
+    image: ${DOCKER_REGISTRY}/pyats-web-cloud-worker:${TAG}
+    hostname: workers
+    restart: always
+    env_file: env/workers.env
+    volumes:
+    - ${LOGS_DIR}/workers:/s3/logs
+    - ${DATA_DIR}/workers:/s3/workers
+    - ${DOCKER_SOCK}:/var/run/docker.sock
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8925:8000
+    labels:
+      com.cisco.s3.component: workers
+      com.cisco.s3.component.type: microservice

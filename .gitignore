@@ -53,3 +53,8 @@ pkgs/examples-pkg/examples/genie
 
 # vscode
 .vscode
+
+# xpresso dirs
+data
+logs
+repos
