@@ -196,3 +196,21 @@ The problem should go away.
 Wait a bit more, or `docker-compose restart users auths`. The initial bootup 
 performs a lot of first-start settings and database migrations, and could fail
 due to running on a slow server.
+
+**ElasticSearch failure to start**
+
+Please check the logs using `docker-compose logs elasticsearch`. If it complains
+about permission issues, run: `chmod 777 data/elastic` and restart elastic using
+`docker-compose restart elasticsearch`.
+
+**Cannot connect to database**
+
+If services are failing to start, and logs show that they cannot connect to 
+database at `database:3306`, make sure your firewalls are not blocking the 
+bridge network `192.168.66.0/24`.
+
+As a trial - shutdown xpresso `docker-compose down`, turn off your firewall, 
+restart docker service, and try starting xpresso again.
+
+Read more at: https://forums.docker.com/t/no-route-to-host-network-request-from-container-to-host-ip-port-published-from-other-container/39063/17
+
