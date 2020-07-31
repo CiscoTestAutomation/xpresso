@@ -212,5 +212,6 @@ bridge network `192.168.66.0/24`.
 As a trial - shutdown xpresso `docker-compose down`, turn off your firewall, 
 restart docker service, and try starting xpresso again.
 
-Read more at: https://forums.docker.com/t/no-route-to-host-network-request-from-container-to-host-ip-port-published-from-other-container/39063/17
+See: https://github.com/CiscoTestAutomation/xpresso/wiki#how-to-test-docker-network-and-ensure-containers-can-talk-to-each-other
+and https://forums.docker.com/t/no-route-to-host-network-request-from-container-to-host-ip-port-published-from-other-container/39063/17
 
