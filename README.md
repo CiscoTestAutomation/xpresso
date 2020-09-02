@@ -88,7 +88,7 @@ server, eg, `http://xpresso.yourdomain.com/`.
   * `LOGS_DIR` should be somewhere with sufficient disk space for XPRESSO micros-ervices logs.
   * If data-dir is changed, you may have to update `workers` service data dir as well. Find `workers` service at `docker-compose.yml` file and update ``WORK_SOURCE`` environment variable pointing to the proper dir. 
 * [ WARNING ]: in linux servers, make sure the max_map_count is set to at *least* 262144, ie `vm.max_map_count=262144`. See [elastic documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html) for details.
-* [ WARNING ]: in linux servers, uncomment the `/etc/localtime:/etc/localtime:ro` and `/etc/timezone:/etc/timezone:ro` entries under volumes for all services.
+* [ WARNING ]: in linux servers, uncomment the `/etc/localtime:/etc/localtime:ro` entries under volumes for all services to ensure timezone Xpresso uses matches your host.
 * [ OPTIONAL ]: at file `${BASE_DIR}/.env`, change `TAG` to most appropriate value for your XPRESSO instance.
 * [ OPTIONAL ]: by default no ports are exposed in Docker. For your testing purposes, you can uncomment the `ports` entry in `docker-compose.yml` file for the services you want. 
 
