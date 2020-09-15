@@ -1103,7 +1103,6 @@ services:
     # - /etc/timezone:/etc/timezone:ro
     depends_on:
     - gateway
-    - controller
     ports:
     - 80:80
     - 443:443
