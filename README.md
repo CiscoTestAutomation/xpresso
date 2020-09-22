@@ -139,6 +139,24 @@ new pubic key and restart `workers` service
 ```bash
 docker-compose restart workers
 ```
+<br/>
+
+**5. Email and SMTP \[optional\]**
+
+Modify `initializers/settings.yml` to suit your email server to enable XPRESSO to send emails. This is used for user signup / management, automated notifications of runs and reservations, and sending of result reports.
+
+``` yaml
+EMAIL_HOST: 'my-smtp-server'
+EMAIL_PORT: 25
+EMAIL_HOST_USER: 'username'
+EMAIL_HOST_PASSWORD: 'passwd',
+EMAIL_USE_TLS: true, // or remove
+EMAIL_USE_SSL: true, // or remove
+EMAIL_TIMEOUT: 10000
+EMAIL_SSL_KEYFILE: '/path/to/pem', // or remove
+EMAIL_SSL_CERTFILE: '/apth/to/pem' // or remove
+```
+
 
 ## Administrator Login
 
