@@ -7,7 +7,7 @@ networks:
       - subnet: ${SUBNET}
 services:
   database:
-    image: mysql/mysql-server:8.0.21
+    image: mysql/mysql-server:8.0
     hostname: database
     restart: always
     env_file: env/database.env
