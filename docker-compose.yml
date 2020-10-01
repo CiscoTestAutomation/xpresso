@@ -7,15 +7,15 @@ networks:
       - subnet: ${SUBNET}
 services:
   database:
-    image: mysql/mysql-server:5.6
+    image: mysql/mysql-server:${MYSQL_TAG}
     hostname: database
     restart: always
     env_file: env/database.env
     volumes:
-    - ${BASE_DIR}/etc/my.cnf:/etc/my.cnf
-    - ${DATA_DIR}/mysql:/var/lib/mysql
-    - ${LOGS_DIR}/database:/var/log
-    - ${BASE_DIR}/initializers/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    - ${BASE_DIR}/etc/my_${MYSQL_VER}.cnf:/etc/my.cnf
+    - ${DATA_DIR}/mysql${MYSQL_VER}:/var/lib/mysql
+    - ${LOGS_DIR}/database${MYSQL_VER}:/var/log
+    - ${BASE_DIR}/initializers/docker-entrypoint-initdb-v${MYSQL_VER}.d:/docker-entrypoint-initdb.d
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
     # ports:
