@@ -148,6 +148,7 @@ services:
     - management
   users-celery:
     image: ${DOCKER_REGISTRY}/pyats-web-users:${TAG}
+    hostname: users_celery
     restart: always
     env_file: env/users.env
     volumes:
@@ -163,9 +164,10 @@ services:
     healthcheck:
       interval: 1m
       start_period: 30s
-      test: celery inspect ping -A user_profiles || exit 1
+      test: celery inspect ping -A user_profiles -d celery@users_celery || exit 1
   users-beat:
     image: ${DOCKER_REGISTRY}/pyats-web-users:${TAG}
+    hostname: users_beat
     restart: always
     env_file: env/users.env
     volumes:
@@ -214,6 +216,7 @@ services:
     - management
   groups-celery:
     image: ${DOCKER_REGISTRY}/pyats-web-groups:${TAG}
+    hostname: groups_celery
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: group_management.celery
@@ -232,9 +235,10 @@ services:
     healthcheck:
       interval: 1m
       start_period: 30s
-      test: celery inspect ping -A group_management.celery || exit 1
+      test: celery inspect ping -A group_management.celery -d celery@groups_celery || exit 1
   groups-beat:
     image: ${DOCKER_REGISTRY}/pyats-web-groups:${TAG}
+    hostname: groups_beat
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: group_management.celery
@@ -363,6 +367,7 @@ services:
     - management
   qmgr-celery:
     image: ${DOCKER_REGISTRY}/pyats-web-qmgr:${TAG}
+    hostname: qmgr_celery
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: qmgr_celery
@@ -381,9 +386,10 @@ services:
     healthcheck:
       interval: 1m
       start_period: 30s
-      test: celery inspect ping -A qmgr_celery || exit 1
+      test: celery inspect ping -A qmgr_celery -d celery@qmgr_celery || exit 1
   qmgr-beat:
     image: ${DOCKER_REGISTRY}/pyats-web-qmgr:${TAG}
+    hostname: qmgr_beat
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: qmgr_celery
@@ -458,6 +464,7 @@ services:
     - management
   topoman-celery:
     image: ${DOCKER_REGISTRY}/pyats-web-topoman:${TAG}
+    hostname: topoman_celery
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: topoman
@@ -477,9 +484,10 @@ services:
     healthcheck:
       interval: 1m
       start_period: 30s
-      test: celery inspect ping -A topoman || exit 1
+      test: celery inspect ping -A topoman -d celery@topoman_celery || exit 1
   topoman-beat:
     image: ${DOCKER_REGISTRY}/pyats-web-topoman:${TAG}
+    hostname: topoman_beat
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: topoman
@@ -535,6 +543,7 @@ services:
     - management
   laas-celery:
     image: ${DOCKER_REGISTRY}/pyats-web-laas:${TAG}
+    hostname: laas_celery
     restart: always
     environment:
       TOPOLOGIES_DIR: /s3/topologies/
@@ -556,9 +565,10 @@ services:
     healthcheck:
       interval: 1m
       start_period: 30s
-      test: celery inspect ping -A s3_laas || exit 1
+      test: celery inspect ping -A s3_laas -d celery@laas_celery || exit 1
   laas-beat:
     image: ${DOCKER_REGISTRY}/pyats-web-laas:${TAG}
+    hostname: laas_beat
     restart: always
     environment:
       TOPOLOGIES_DIR: /s3/topologies/
@@ -601,6 +611,7 @@ services:
     volumes:
     - ${DATA_DIR}/yaml/cleans:/s3/yamls
     - ${LOGS_DIR}/registry:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
     # ports:
@@ -612,6 +623,16 @@ services:
     - database
     - cache
     - management
+    - genie
+    command:
+    - wait-for-it.sh
+    - genie:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "/s3/entrypoint.sh"
   results:
     image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
     hostname: results
@@ -637,6 +658,7 @@ services:
     - management
   results-celery:
     image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
+    hostname: results_celery
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: s3_results.results_celery
@@ -657,9 +679,10 @@ services:
     healthcheck:
       interval: 1m
       start_period: 30s
-      test: celery inspect ping -A s3_results.results_celery || exit 1
+      test: celery inspect ping -A s3_results.results_celery -d celery@results_celery || exit 1
   results-beat:
     image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
+    hostname: results_beat
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: s3_results.results_celery
@@ -713,6 +736,7 @@ services:
     - management
   jenkinsengine-celery:
     image: ${DOCKER_REGISTRY}/pyats-web-jenkinsengine:${TAG}
+    hostname: jenkinsengine_celery
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: je_celery
@@ -731,9 +755,10 @@ services:
     healthcheck:
       interval: 1m
       start_period: 30s
-      test: celery inspect ping -A je_celery || exit 1
+      test: celery inspect ping -A je_celery -d celery@jenkinsengine_celery || exit 1
   jenkinsengine-beat:
     image: ${DOCKER_REGISTRY}/pyats-web-jenkinsengine:${TAG}
+    hostname: jenkinsengine_beat
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: je_celery
@@ -785,6 +810,7 @@ services:
     - management
   requests-celery:
     image: ${DOCKER_REGISTRY}/pyats-web-requests:${TAG}
+    hostname: requests_celery
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: request_service
@@ -803,9 +829,10 @@ services:
     healthcheck:
       interval: 1m
       start_period: 30s
-      test: celery inspect ping -A request_service || exit 1
+      test: celery inspect ping -A request_service -d celery@requests_celery || exit 1
   requests-beat:
     image: ${DOCKER_REGISTRY}/pyats-web-requests:${TAG}
+    hostname: requests_beat
     restart: always
     environment:
       CELERY_TASK_DEFAULT_QUEUE: request_service
@@ -880,6 +907,7 @@ services:
     - management
   cdets-celery:
     image: ${DOCKER_REGISTRY}/pyats-web-cdets:${TAG}
+    hostname: cdets_celery
     restart: always
     environment:
       SERVICE_LOGS_DIR: /s3/logs
@@ -895,16 +923,17 @@ services:
       com.cisco.s3.component.type: celery
     depends_on:
     - cdets
-    command: 
-    - bash 
+    command:
+    - bash
     - -c
     - "celery -A retrial_celery worker -l debug -E -Q cdets_service,run --logfile=/s3/logs/celery_default.log"
     healthcheck:
       interval: 1m
       start_period: 30s
-      test: celery inspect ping -A retrial_celery || exit 1
+      test: celery inspect ping -A retrial_celery -d celery@cdets_celery || exit 1
   cdets-beat:
     image: ${DOCKER_REGISTRY}/pyats-web-cdets:${TAG}
+    hostname: cdets_beats
     restart: always
     environment:
       SERVICE_LOGS_DIR: /s3/logs
@@ -963,6 +992,7 @@ services:
     - management
   genie-celery:
     image: ${DOCKER_REGISTRY}/pyats-web-genie:${TAG}
+    hostname: genie_celery
     restart: always
     environment:
       MEDIA_BASE_DIR: /s3/
@@ -986,9 +1016,10 @@ services:
     healthcheck:
       interval: 1m
       start_period: 30s
-      test: celery inspect ping -A genies_celery || exit 1
+      test: celery inspect ping -A genies_celery -d celery@genie_celery || exit 1
   genie-beat:
     image: ${DOCKER_REGISTRY}/pyats-web-genie:${TAG}
+    hostname: genie_beat
     restart: always
     environment:
       MEDIA_BASE_DIR: /s3/
@@ -1021,7 +1052,7 @@ services:
     healthcheck:
       interval: 1m
       start_period: 2m
-      test: python manage.py beat_health_check || exit 0
+      test: python manage.py beat_health_check || exit 1
   controller:
     image: ${DOCKER_REGISTRY}/pyats-web-controller:${TAG}
     hostname: controller
