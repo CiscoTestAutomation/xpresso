@@ -231,6 +231,15 @@ bridge network `192.168.66.0/24`.
 As a trial - shutdown xpresso `docker-compose down`, turn off your firewall, 
 restart docker service, and try starting xpresso again.
 
+**General networking issues with Xpresso install**
+* Ensure hostname is properly set and resolvable both internally and externally to the host machine
+* Ensure DNS on the host is configured to be able to resolve its external hostname and IP
+* Ensure the `ADVERTISED_URL` in the `.env` file is set to the fully qualified external URL using hostname or IP *not localhost*
+* Ensure if a proxy is set, it does not affect traffic going to the above domain/hostname
+* Ensure nothing else is using or restricting the local `192.168.66.x` subnet (or change it to another one)
+* Ensure to switch off the Firewall using: For CENTOS - `sudo systemctl stop firewalld` , Ubuntu - `sudo ufw disable`
+
+
 See: https://github.com/CiscoTestAutomation/xpresso/wiki#how-to-test-docker-network-and-ensure-containers-can-talk-to-each-other
 and https://forums.docker.com/t/no-route-to-host-network-request-from-container-to-host-ip-port-published-from-other-container/39063/17
 
