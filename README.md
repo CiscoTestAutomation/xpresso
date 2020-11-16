@@ -237,7 +237,7 @@ restart docker service, and try starting xpresso again.
 * Ensure the `ADVERTISED_URL` in the `.env` file is set to the fully qualified external URL using hostname or IP *not localhost*
 * Ensure if a proxy is set, it does not affect traffic going to the above domain/hostname
 * Ensure nothing else is using or restricting the local `192.168.66.x` subnet (or change it to another one)
-* Ensure to switch off the Firewall using: For CENTOS - `sudo systemctl stop firewalld` , Ubuntu - `sudo ufw disable`
+* Ensure to switch off the Firewall: For CENTOS - `sudo systemctl stop firewalld` , Ubuntu - `sudo ufw disable`
 
 
 See: https://github.com/CiscoTestAutomation/xpresso/wiki#how-to-test-docker-network-and-ensure-containers-can-talk-to-each-other
