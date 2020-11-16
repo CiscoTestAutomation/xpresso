@@ -53,6 +53,19 @@ services:
       memlock:
         hard: -1
         soft: -1
+  copyservice:
+    image: ${DOCKER_REGISTRY}/pyats-web-copyservice:${TAG}
+    environment:
+      UPLOAD_FOLDER: /usr/src/copyservice/uploads/
+      UPLOAD_RESULT_FOLDER: /usr/src/copyservice/uploads/archives/zipped
+      NGINX_URL: ${ADVERTISED_URL}
+    hostname: copyservice
+    ports:
+    - 9999:9999
+    volumes:
+    - ${DATA_DIR}/copyservice:/usr/src/copyservice/uploads
+    - ${DATA_DIR}/copyservice/db:/usr/src/copyservice/db
+    - ${LOGS_DIR}/copyservice:/s3/logs
   management:
     image: ${DOCKER_REGISTRY}/pyats-web-management:${TAG}
     hostname: management
@@ -1130,6 +1143,7 @@ services:
     ## - ${BASE_DIR}/etc/xpresso.key:/etc/nginx/certs/xpresso.key
     - ${DATA_DIR}/topology/images:/s3/images
     - ${DATA_DIR}/upload:/upload
+    - ${DATA_DIR}/copyservice:/usr/src/copyservice/uploads
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
     depends_on:
