@@ -7,7 +7,7 @@ networks:
       - subnet: ${SUBNET}
 services:
   database:
-    image: mysql/mysql-server:5.6
+    image: mysql/mysql-server:8.0
     hostname: database
     restart: always
     env_file: env/database.env
@@ -418,28 +418,6 @@ services:
       interval: 1m
       start_period: 2m
       test: python manage.py beat_health_check || exit 1
-  testbeds:
-    image: ${DOCKER_REGISTRY}/pyats-web-testbeds:${TAG}
-    hostname: testbeds
-    restart: always
-    environment:
-      YAML_STORAGE: /s3/yamls/
-      LOCAL_SETTINGS_MODULE: local_settings
-      MGMT_SERVICE_URL: http://management:8000/management/api/
-    volumes:
-    - ${DATA_DIR}/yaml/testbeds:/s3/yamls
-    - ${LOGS_DIR}/testbeds:/s3/logs
-    # - /etc/localtime:/etc/localtime:ro
-    # - /etc/timezone:/etc/timezone:ro
-    # ports:
-    # - 8911:8000
-    labels:
-      com.cisco.s3.component: testbeds
-      com.cisco.s3.component.type: microservice
-    depends_on:
-    - database
-    - cache
-    - management
   topoman:
     image: ${DOCKER_REGISTRY}/pyats-web-topoman:${TAG}
     hostname: topoman
@@ -633,6 +611,24 @@ services:
     - bash
     - -c
     - "/s3/entrypoint.sh"
+  registry-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-registry:${TAG}
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: jobs.celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/yaml/cleans:/s3/yamls
+    - ${LOGS_DIR}/registry:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: registry
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - registry
+    command: celery -A jobs.celery worker -l info -E
   results:
     image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
     hostname: results
@@ -713,6 +709,32 @@ services:
       interval: 1m
       start_period: 2m
       test: python manage.py beat_health_check || exit 1
+  results2:
+    image: ${DOCKER_REGISTRY}/pyats-web-results2:${TAG}
+    hostname: results2
+    restart: always
+    env_file: env/database.env
+    environment:
+      ENABLE_BASELINE: 'True'
+      AUTO_GENERATE_RESULT_ID: 'False'
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+      ADVERTISED_URL: ${ADVERTISED_URL}
+    volumes:
+    - ${DATA_DIR}/archives/cached:/s3/archives/cached
+    - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
+    - ${DATA_DIR}/copyservice/archives/zipped:/s3/copyservice/archives/zipped
+    - ${LOGS_DIR}/results:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8915:8000
+    labels:
+      com.cisco.s3.component: results2
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
   jenkinsengine:
     image: ${DOCKER_REGISTRY}/pyats-web-jenkinsengine:${TAG}
     hostname: jenkinsengine
@@ -978,6 +1000,7 @@ services:
     volumes:
     - ${DATA_DIR}/genie/media:/s3/media
     - ${DATA_DIR}/genie/static:/s3/static
+    - ${DATA_DIR}/genie/images:/s3/images
     - ${LOGS_DIR}/genie:/s3/logs
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
@@ -1004,6 +1027,7 @@ services:
     volumes:
     - ${DATA_DIR}/genie/media:/s3/media
     - ${DATA_DIR}/genie/static:/s3/static
+    - ${DATA_DIR}/genie/images:/s3/images
     - ${LOGS_DIR}/genie:/s3/logs
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
@@ -1031,6 +1055,7 @@ services:
     volumes:
     - ${DATA_DIR}/genie/media:/s3/media
     - ${DATA_DIR}/genie/static:/s3/static
+    - ${DATA_DIR}/genie/images:/s3/images
     - ${LOGS_DIR}/genie:/s3/logs
     - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
     # - /etc/localtime:/etc/localtime:ro
@@ -1060,11 +1085,15 @@ services:
     env_file: env/database.env
     environment:
       SERVICE_LOGS_DIR: /s3/logs
-      GENIE_SERVICE_URL: http://genie:8000/genie/api/
       HISTORY_SERVICE_URL: http://history:8000/history/api/
       MGMT_SERVICE_URL: http://management:8000/management/api/
-      RESULT_SERVICE_URL: http://results:8000/results/api/
+      REDIS_HOST: cache
+      WS_HOST: wsgateway
+      WS_PORT: '8000'
+      RESULT_SERVICE_URL: ${ADVERTISED_URL}
+      RESULTS_ENDPOINT: api/v1/upload/results
     volumes:
+    - ${DATA_DIR}/controller:/s3/data
     - ${LOGS_DIR}/controller:/s3/logs
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
@@ -1076,7 +1105,6 @@ services:
     depends_on:
     - database
     - cache
-    - management
   plugins:
     image: ${DOCKER_REGISTRY}/pyats-web-plugins:${TAG}
     hostname: plugins
@@ -1130,20 +1158,27 @@ services:
     ## - ${BASE_DIR}/etc/xpresso.key:/etc/nginx/certs/xpresso.key
     - ${DATA_DIR}/topology/images:/s3/images
     - ${DATA_DIR}/upload:/upload
+    - ${DATA_DIR}/copyservice:/usr/src/copyservice/uploads
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
     depends_on:
     - gateway
+    - controller
     ports:
     - 80:80
     - 443:443
   workers:
-    image: ${DOCKER_REGISTRY}/pyats-web-cloud-worker:${TAG}
+    image: ${DOCKER_REGISTRY}/pyats-web-taas-worker:${TAG}
     hostname: workers
     restart: always
     env_file: env/workers.env
     environment:
       WORK_SOURCE: $PWD/data/workers
+      WORKER_LABEL: pyats-worker-1
+      WS_HOST: wsgateway
+      WS_PORT: '8000'
+      BUILDER_IMAGE_NAME: ${DOCKER_REGISTRY}/image-builder:${TAG}
+      SERVICE_URL: ${ADVERTISED_URL}:8925/workers/api/v1
     volumes:
     - ${LOGS_DIR}/workers:/s3/logs
     - ${DATA_DIR}/workers:/s3/workers
@@ -1152,6 +1187,43 @@ services:
     # - /etc/timezone:/etc/timezone:ro
     # ports:
     # - 8925:8000
+    depends_on:
+    - wsgateway
     labels:
       com.cisco.s3.component: workers
+      com.cisco.s3.component.type: microservice
+  wsgateway:
+    image: ${DOCKER_REGISTRY}/pyats-web-wsgateway:${TAG}
+    hostname: wsgateway
+    restart: always
+    environment:
+      REDIS_HOST: cache
+      SERVICE_LOGS_DIR: /taas/logs
+    volumes:
+    - ${LOGS_DIR}/wsgateway:/taas/logs
+    # ports:
+    # - 8927:8000
+    depends_on:
+    - cache
+    labels:
+      com.cisco.s3.component: wsgateway
+      com.cisco.s3.component.type: microservice
+  copyservice:
+    image: ${DOCKER_REGISTRY}/pyats-web-copyservice:${TAG}
+    hostname: copyservice
+    env_file: env/database.env
+    environment:
+      UPLOAD_FOLDER: /usr/src/copyservice/uploads
+      UPLOAD_RESULT_FOLDER: /usr/src/copyservice/uploads/archives/zipped
+      NGINX_URL: ${ADVERTISED_URL}
+      SERVICE_LOGS_DIR: /s3/logs
+      DB_HOST: database
+      DATABASE_KEY: prod
+    volumes:
+      - ${DATA_DIR}/copyservice:/usr/src/copyservice/uploads
+      - ${LOGS_DIR}/copyservice:/s3/logs
+    # ports:
+    # - 9999:9999
+    labels:
+      com.cisco.s3.component: copyservice
       com.cisco.s3.component.type: microservice
