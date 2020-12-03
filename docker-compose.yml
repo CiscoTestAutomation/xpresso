@@ -1141,6 +1141,7 @@ services:
     - management
     volumes:
     - ${LOGS_DIR}/gateway:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
     # ports:
@@ -1148,6 +1149,15 @@ services:
     labels:
       com.cisco.s3.component: gateway
       com.cisco.s3.component.type: microservice
+    command:
+    - wait-for-it.sh
+    - management:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "supervisord -c /s3/supervisord.conf"
   client:
     image: ${DOCKER_REGISTRY}/pyats-web-client:${TAG}
     hostname: client
@@ -1201,6 +1211,8 @@ services:
       SERVICE_LOGS_DIR: /taas/logs
     volumes:
     - ${LOGS_DIR}/wsgateway:/taas/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
     # ports:
     # - 8927:8000
     depends_on:
@@ -1222,8 +1234,12 @@ services:
     volumes:
       - ${DATA_DIR}/copyservice:/usr/src/copyservice/uploads
       - ${LOGS_DIR}/copyservice:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro  
     # ports:
     # - 9999:9999
+    depends_on:
+    - database  
     labels:
       com.cisco.s3.component: copyservice
       com.cisco.s3.component.type: microservice

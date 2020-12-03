@@ -337,7 +337,7 @@ microservices:
           NAME: s3_resources
   results:
     description: 'A service for viewing run results and associated data'
-    url: http://results:8000/results/api/
+    url: http://results2:8000/results/api/
     settings:
       ARCHIVE_CACHE_RETENTION_DAYS: 7
       CACHED_RESULT_FILE: parsed_script.json
