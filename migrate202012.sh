@@ -28,8 +28,8 @@ fi
 # Step 7: starting database with mysql 8.0
 docker-compose up -d database
 
-echo "Sleeping 20 seconds for the database to be up..."
-sleep 20
+echo "Sleeping 90 seconds for the database to be up..."
+sleep 90
 
 # Step 8: restoring data to mysql 8.0
 echo "Restoring MySQL data back to database..."
