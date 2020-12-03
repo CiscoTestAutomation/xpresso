@@ -343,7 +343,7 @@ microservices:
       CACHED_RESULT_FILE: parsed_script.json
       DATABASES:
         default: 
-          NAME: s3_results
+          NAME: result_service
       FILE_READ_SIZE: 10240
       MESSAGE_READ_SIZE: 100
   sessions:

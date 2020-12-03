@@ -38,7 +38,7 @@ docker-compose exec -T database mysql -u root -p${MYSQL_ROOT_PASSWORD} < dump_5.
 # Step 9: results migration
 docker pull ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
 docker-compose stop results
-docker-compose start results
+docker-compose start management results
 docker-compose exec results python manage.py generate_snapshot
 mkdir -p logs/results2 && mv logs/results/result_snapshot.json logs/results2/result_snapshot.json
 mv data/archives/cached data/archives/cached_old && mkdir data/archives/cached
