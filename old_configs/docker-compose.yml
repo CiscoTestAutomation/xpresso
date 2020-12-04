@@ -1,0 +1,1157 @@
+version: '3.4'
+networks:
+  default:
+    ipam:
+      driver: ${DRIVER}
+      config:
+      - subnet: ${SUBNET}
+services:
+  database:
+    image: mysql/mysql-server:5.6
+    hostname: database
+    restart: always
+    env_file: env/database.env
+    volumes:
+    - ${BASE_DIR}/etc/my.cnf:/etc/my.cnf
+    - ${DATA_DIR}/mysql:/var/lib/mysql
+    - ${LOGS_DIR}/database:/var/log
+    - ${BASE_DIR}/initializers/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 3306:3306
+  cache:
+    image: redis:3.2
+    hostname: cache
+    restart: always
+    volumes:
+    - ${DATA_DIR}/cache:/data
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 6379:6379
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
+    hostname: elasticsearch
+    restart: always
+    environment:
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      bootstrap.memory_lock: 'true'
+      cluster.initial_master_nodes: elasticsearch
+      cluster.name: docker-cluster
+      node.name: elasticsearch
+    volumes:
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - ${DATA_DIR}/elastic:/usr/share/elasticsearch/data
+    - ${DATA_DIR}/elastic_snapshots:/elastic_snapshots
+    - ${BASE_DIR}/etc/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 9200:9200
+    ulimits:
+      memlock:
+        hard: -1
+        soft: -1
+  management:
+    image: ${DOCKER_REGISTRY}/pyats-web-management:${TAG}
+    hostname: management
+    restart: always
+    environment:
+      MGMT_INIT_SETTINGS: /initializers/settings.yml
+      ADVERTISED_URL: ${ADVERTISED_URL}
+      INSTANCE_ID: ${INSTANCE_ID}
+      TOOL_NAME: ${TOOL_NAME}
+      FORCE_UPDATE: 'false'
+    volumes:
+    - ${BASE_DIR}/etc/mgmt_settings.py:/s3/src/settings.py
+    - ${BASE_DIR}/initializers:/initializers
+    - ${LOGS_DIR}:/s3/logs
+    - ${DOCKER_SOCK}:/var/run/docker.sock
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    healthcheck:
+      interval: 10m
+      retries: 2
+      start_period: 2m
+      test:
+      - CMD
+      - python
+      - manage.py
+      - restart_unhealthy_containers
+      timeout: 1m
+    # ports:
+    # - 8000:8000
+    labels:
+      com.cisco.s3.component: management
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+  sessions:
+    image: ${DOCKER_REGISTRY}/pyats-web-sessions:${TAG}
+    hostname: sessions
+    restart: always
+    environment:
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/sessions:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8900:8000
+    labels:
+      com.cisco.s3.component: sessions
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  auths:
+    image: ${DOCKER_REGISTRY}/pyats-web-auths:${TAG}
+    hostname: auths
+    restart: always
+    environment:
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/auths:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8901:8000
+    labels:
+      com.cisco.s3.component: auths
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  users:
+    image: ${DOCKER_REGISTRY}/pyats-web-users:${TAG}
+    hostname: users
+    restart: always
+    env_file: env/users.env
+    volumes:
+    - ${LOGS_DIR}/users:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8902:8000
+    labels:
+      com.cisco.s3.component: users
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  users-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-users:${TAG}
+    hostname: users_celery
+    restart: always
+    env_file: env/users.env
+    volumes:
+    - ${LOGS_DIR}/users:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: users
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - users
+    command: celery -A user_profiles worker -l info -E
+    healthcheck:
+      interval: 1m
+      start_period: 30s
+      test: celery inspect ping -A user_profiles -d celery@users_celery || exit 1
+  users-beat:
+    image: ${DOCKER_REGISTRY}/pyats-web-users:${TAG}
+    hostname: users_beat
+    restart: always
+    env_file: env/users.env
+    volumes:
+    - ${LOGS_DIR}/users:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: users
+      com.cisco.s3.component.type: celery-beat
+    depends_on:
+    - users
+    command:
+    - wait-for-it.sh
+    - users:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "celery -A user_profiles beat -l info --pidfile="
+    healthcheck:
+      interval: 1m
+      start_period: 2m
+      test: python manage.py beat_health_check || exit 1
+  groups:
+    image: ${DOCKER_REGISTRY}/pyats-web-groups:${TAG}
+    hostname: groups
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: group_management.celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/groups:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8903:8000
+    labels:
+      com.cisco.s3.component: groups
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  groups-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-groups:${TAG}
+    hostname: groups_celery
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: group_management.celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/groups:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: groups
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - groups
+    command: celery -A group_management.celery worker -l info -E
+    healthcheck:
+      interval: 1m
+      start_period: 30s
+      test: celery inspect ping -A group_management.celery -d celery@groups_celery || exit 1
+  groups-beat:
+    image: ${DOCKER_REGISTRY}/pyats-web-groups:${TAG}
+    hostname: groups_beat
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: group_management.celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/groups:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: groups
+      com.cisco.s3.component.type: celery-beat
+    depends_on:
+    - groups
+    command:
+    - wait-for-it.sh
+    - groups:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "celery -A group_management.celery beat -l info -S django"
+    healthcheck:
+      interval: 1m
+      start_period: 2m
+      test: python manage.py beat_health_check || exit 1
+  resources:
+    image: ${DOCKER_REGISTRY}/pyats-web-resources:${TAG}
+    hostname: resources
+    restart: always
+    environment:
+      DATABASE_TIMEOUT: 30000
+      ELASTIC_HOSTS: http://elasticsearch:9200
+      ELASTIC_INDEX: resources
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+      NODE_ENV: production
+      TAG_CLEAN_INTERVAL: 86400000
+      TAG_INDEX: resource_tags
+    depends_on:
+    - database
+    - cache
+    - elasticsearch
+    - management
+    command:
+    - wait-for-it.sh
+    - elasticsearch:9200
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "supervisord -c /s3/supervisord.conf"
+    volumes:
+    - ${LOGS_DIR}/resources:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8904:8000
+    labels:
+      com.cisco.s3.component: resources
+      com.cisco.s3.component.type: microservice
+  communications:
+    image: ${DOCKER_REGISTRY}/pyats-web-communications:${TAG}
+    hostname: communications
+    restart: always
+    environment:
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/templates:/s3/templates
+    - ${LOGS_DIR}/communications:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8908:8000
+    labels:
+      com.cisco.s3.component: communications
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  history:
+    image: ${DOCKER_REGISTRY}/pyats-web-history:${TAG}
+    hostname: history
+    restart: always
+    environment:
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/history:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8909:8000
+    labels:
+      com.cisco.s3.component: history
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  qmgr:
+    image: ${DOCKER_REGISTRY}/pyats-web-qmgr:${TAG}
+    hostname: qmgr
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: qmgr_celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/qmgr:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8910:8000
+    labels:
+      com.cisco.s3.component: qmgr
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  qmgr-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-qmgr:${TAG}
+    hostname: qmgr_celery
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: qmgr_celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/qmgr:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: qmgr
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - qmgr
+    command: celery -A qmgr_celery worker -l info -E
+    healthcheck:
+      interval: 1m
+      start_period: 30s
+      test: celery inspect ping -A qmgr_celery -d celery@qmgr_celery || exit 1
+  qmgr-beat:
+    image: ${DOCKER_REGISTRY}/pyats-web-qmgr:${TAG}
+    hostname: qmgr_beat
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: qmgr_celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/qmgr:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: qmgr
+      com.cisco.s3.component.type: celery-beat
+    depends_on:
+    - qmgr
+    command:
+    - wait-for-it.sh
+    - qmgr:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "celery -A qmgr_celery beat -l info -S django --pidfile="
+    healthcheck:
+      interval: 1m
+      start_period: 2m
+      test: python manage.py beat_health_check || exit 1
+  testbeds:
+    image: ${DOCKER_REGISTRY}/pyats-web-testbeds:${TAG}
+    hostname: testbeds
+    restart: always
+    environment:
+      YAML_STORAGE: /s3/yamls/
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/yaml/testbeds:/s3/yamls
+    - ${LOGS_DIR}/testbeds:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8911:8000
+    labels:
+      com.cisco.s3.component: testbeds
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  topoman:
+    image: ${DOCKER_REGISTRY}/pyats-web-topoman:${TAG}
+    hostname: topoman
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: topoman
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/testbed/images:/s3/images
+    - ${LOGS_DIR}/topoman:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8912:8000
+    labels:
+      com.cisco.s3.component: topoman
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  topoman-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-topoman:${TAG}
+    hostname: topoman_celery
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: topoman
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/testbed/images:/s3/images
+    - ${LOGS_DIR}/topoman:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: topoman
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - topoman
+    command: celery -A topoman worker -l debug -E --logfile=/s3/logs/celery.log
+    healthcheck:
+      interval: 1m
+      start_period: 30s
+      test: celery inspect ping -A topoman -d celery@topoman_celery || exit 1
+  topoman-beat:
+    image: ${DOCKER_REGISTRY}/pyats-web-topoman:${TAG}
+    hostname: topoman_beat
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: topoman
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/testbed/images:/s3/images
+    - ${LOGS_DIR}/topoman:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: topoman
+      com.cisco.s3.component.type: celery-beat
+    depends_on:
+    - topoman
+    command:
+    - wait-for-it.sh
+    - topoman:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "celery -A topoman beat -l info --pidfile="
+    healthcheck:
+      interval: 1m
+      start_period: 2m
+      test: python manage.py beat_health_check || exit 1
+  laas:
+    image: ${DOCKER_REGISTRY}/pyats-web-laas:${TAG}
+    hostname: laas
+    restart: always
+    environment:
+      TOPOLOGIES_DIR: /s3/topologies/
+      CELERY_TASK_DEFAULT_QUEUE: s3_laas
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/virl:/s3/topologies
+    - ${DATA_DIR}/topology/images:/s3/images
+    - ${LOGS_DIR}/laas:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8913:8000
+    labels:
+      com.cisco.s3.component: laas
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  laas-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-laas:${TAG}
+    hostname: laas_celery
+    restart: always
+    environment:
+      TOPOLOGIES_DIR: /s3/topologies/
+      CELERY_TASK_DEFAULT_QUEUE: s3_laas
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/virl:/s3/topologies
+    - ${DATA_DIR}/topology/images:/s3/images
+    - ${LOGS_DIR}/laas:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: laas
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - laas
+    command: celery -A s3_laas worker -l debug -E --logfile=/s3/logs/celery.log
+    healthcheck:
+      interval: 1m
+      start_period: 30s
+      test: celery inspect ping -A s3_laas -d celery@laas_celery || exit 1
+  laas-beat:
+    image: ${DOCKER_REGISTRY}/pyats-web-laas:${TAG}
+    hostname: laas_beat
+    restart: always
+    environment:
+      TOPOLOGIES_DIR: /s3/topologies/
+      CELERY_TASK_DEFAULT_QUEUE: s3_laas
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/virl:/s3/topologies
+    - ${DATA_DIR}/topology/images:/s3/images
+    - ${LOGS_DIR}/laas:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: laas
+      com.cisco.s3.component.type: celery-beat
+    depends_on:
+    - laas
+    command:
+    - wait-for-it.sh
+    - laas:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "celery -A s3_laas beat -l info -S django"
+    healthcheck:
+      interval: 1m
+      start_period: 2m
+      test: python manage.py beat_health_check || exit 1
+  registry:
+    image: ${DOCKER_REGISTRY}/pyats-web-registry:${TAG}
+    hostname: registry
+    restart: always
+    environment:
+      YAML_STORAGE: /s3/yamls/
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/yaml/cleans:/s3/yamls
+    - ${LOGS_DIR}/registry:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8914:8000
+    labels:
+      com.cisco.s3.component: registry
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+    - genie
+    command:
+    - wait-for-it.sh
+    - genie:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "/s3/entrypoint.sh"
+  results:
+    image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
+    hostname: results
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: s3_results.results_celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/archives/cached:/s3/archives/cached
+    - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
+    - ${LOGS_DIR}/results:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8915:8000
+    labels:
+      com.cisco.s3.component: results
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  results-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
+    hostname: results_celery
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: s3_results.results_celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/archives/cached:/s3/archives/cached
+    - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
+    - ${LOGS_DIR}/results:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: results
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - results
+    command: celery -A s3_results.results_celery worker -l info -E
+    healthcheck:
+      interval: 1m
+      start_period: 30s
+      test: celery inspect ping -A s3_results.results_celery -d celery@results_celery || exit 1
+  results-beat:
+    image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
+    hostname: results_beat
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: s3_results.results_celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/archives/cached:/s3/archives/cached
+    - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
+    - ${LOGS_DIR}/results:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: results
+      com.cisco.s3.component.type: celery-beat
+    depends_on:
+    - results
+    command:
+    - wait-for-it.sh
+    - results:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "celery -A s3_results.results_celery beat -l info -S django"
+    healthcheck:
+      interval: 1m
+      start_period: 2m
+      test: python manage.py beat_health_check || exit 1
+  jenkinsengine:
+    image: ${DOCKER_REGISTRY}/pyats-web-jenkinsengine:${TAG}
+    hostname: jenkinsengine
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: je_celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/jenkinsengine:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8916:8000
+    labels:
+      com.cisco.s3.component: jenkinsengine
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  jenkinsengine-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-jenkinsengine:${TAG}
+    hostname: jenkinsengine_celery
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: je_celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/jenkinsengine:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: jenkinsengine
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - jenkinsengine
+    command: celery -A je_celery worker -l info -E
+    healthcheck:
+      interval: 1m
+      start_period: 30s
+      test: celery inspect ping -A je_celery -d celery@jenkinsengine_celery || exit 1
+  jenkinsengine-beat:
+    image: ${DOCKER_REGISTRY}/pyats-web-jenkinsengine:${TAG}
+    hostname: jenkinsengine_beat
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: je_celery
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/jenkinsengine:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: jenkinsengine
+      com.cisco.s3.component.type: celery-beat
+    depends_on:
+    - jenkinsengine
+    command:
+    - wait-for-it.sh
+    - jenkinsengine:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "celery -A je_celery beat -l info -S django"
+    healthcheck:
+      interval: 1m
+      start_period: 2m
+      test: python manage.py beat_health_check || exit 1
+  requests:
+    image: ${DOCKER_REGISTRY}/pyats-web-requests:${TAG}
+    hostname: requests
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: request_service
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/requests:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8917:8000
+    labels:
+      com.cisco.s3.component: requests
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  requests-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-requests:${TAG}
+    hostname: requests_celery
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: request_service
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/requests:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: requests
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - requests
+    command: celery -A request_service worker -l debug -E --logfile=/s3/logs/celery.log
+    healthcheck:
+      interval: 1m
+      start_period: 30s
+      test: celery inspect ping -A request_service -d celery@requests_celery || exit 1
+  requests-beat:
+    image: ${DOCKER_REGISTRY}/pyats-web-requests:${TAG}
+    hostname: requests_beat
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: request_service
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/requests:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: requests
+      com.cisco.s3.component.type: celery-beat
+    depends_on:
+    - requests
+    command:
+    - wait-for-it.sh
+    - requests:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "celery -A request_service beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler --pidfile="
+    healthcheck:
+      interval: 1m
+      start_period: 2m
+      test: python manage.py beat_health_check || exit 1
+  labvpn:
+    image: ${DOCKER_REGISTRY}/pyats-web-labvpn:${TAG}
+    hostname: labvpn
+    restart: always
+    environment:
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/labvpn:/s3/logs
+    - ${DOCKER_SOCK}:/var/run/docker.sock
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8918:8000
+    labels:
+      com.cisco.s3.component: labvpn
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  cdets:
+    image: ${DOCKER_REGISTRY}/pyats-web-cdets:${TAG}
+    hostname: cdets
+    restart: always
+    env_file: env/database.env
+    environment:
+      SERVICE_LOGS_DIR: /s3/logs
+      CELERY_TASK_DEFAULT_QUEUE: cdets_service
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/cdets:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8919:8000
+    labels:
+      com.cisco.s3.component: cdets
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  cdets-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-cdets:${TAG}
+    hostname: cdets_celery
+    restart: always
+    environment:
+      SERVICE_LOGS_DIR: /s3/logs
+      CELERY_TASK_DEFAULT_QUEUE: cdets_service
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/cdets:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: cdets
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - cdets
+    command:
+    - bash
+    - -c
+    - "celery -A retrial_celery worker -l debug -E -Q cdets_service,run --logfile=/s3/logs/celery_default.log"
+    healthcheck:
+      interval: 1m
+      start_period: 30s
+      test: celery inspect ping -A retrial_celery -d celery@cdets_celery || exit 1
+  cdets-beat:
+    image: ${DOCKER_REGISTRY}/pyats-web-cdets:${TAG}
+    hostname: cdets_beats
+    restart: always
+    environment:
+      SERVICE_LOGS_DIR: /s3/logs
+      CELERY_TASK_DEFAULT_QUEUE: cdets_service
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/cdets:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: cdets
+      com.cisco.s3.component.type: celery-beat
+    depends_on:
+    - cdets
+    command:
+    - wait-for-it.sh
+    - cdets:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "celery -A retrial_celery beat -l info --pidfile="
+    healthcheck:
+      interval: 1m
+      start_period: 2m
+      test: python manage.py beat_health_check || exit 1
+  genie:
+    image: ${DOCKER_REGISTRY}/pyats-web-genie:${TAG}
+    hostname: genie
+    restart: always
+    env_file: env/database.env
+    environment:
+      MEDIA_BASE_DIR: /s3/
+      SERVICE_LOGS_DIR: /s3/logs
+      CELERY_TASK_DEFAULT_QUEUE: genie_service
+      LOCAL_SETTINGS_MODULE: local_settings
+      CONTROLLER_URL: http://controller:8000/controller/api/
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/genie/media:/s3/media
+    - ${DATA_DIR}/genie/static:/s3/static
+    - ${LOGS_DIR}/genie:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8920:8000
+    labels:
+      com.cisco.s3.component: genie
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  genie-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-genie:${TAG}
+    hostname: genie_celery
+    restart: always
+    environment:
+      MEDIA_BASE_DIR: /s3/
+      SERVICE_LOGS_DIR: /s3/logs
+      CELERY_TASK_DEFAULT_QUEUE: genie_service
+      LOCAL_SETTINGS_MODULE: local_settings
+      CONTROLLER_URL: http://controller:8000/controller/api/
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/genie/media:/s3/media
+    - ${DATA_DIR}/genie/static:/s3/static
+    - ${LOGS_DIR}/genie:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: genie
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - genie
+    command: celery -A genies_celery worker -l debug -E --logfile=/s3/logs/celery.log
+    healthcheck:
+      interval: 1m
+      start_period: 30s
+      test: celery inspect ping -A genies_celery -d celery@genie_celery || exit 1
+  genie-beat:
+    image: ${DOCKER_REGISTRY}/pyats-web-genie:${TAG}
+    hostname: genie_beat
+    restart: always
+    environment:
+      MEDIA_BASE_DIR: /s3/
+      SERVICE_LOGS_DIR: /s3/logs
+      CELERY_TASK_DEFAULT_QUEUE: genie_service
+      LOCAL_SETTINGS_MODULE: local_settings
+      CONTROLLER_URL: http://controller:8000/controller/api/
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${DATA_DIR}/genie/media:/s3/media
+    - ${DATA_DIR}/genie/static:/s3/static
+    - ${LOGS_DIR}/genie:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    labels:
+      com.cisco.s3.component: genie
+      com.cisco.s3.component.type: celery-beat
+    depends_on:
+    - genie
+    command:
+    - wait-for-it.sh
+    - genie:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "celery -A genies_celery beat -l info --pidfile="
+    healthcheck:
+      interval: 1m
+      start_period: 2m
+      test: python manage.py beat_health_check || exit 1
+  controller:
+    image: ${DOCKER_REGISTRY}/pyats-web-controller:${TAG}
+    hostname: controller
+    restart: always
+    env_file: env/database.env
+    environment:
+      SERVICE_LOGS_DIR: /s3/logs
+      GENIE_SERVICE_URL: http://genie:8000/genie/api/
+      HISTORY_SERVICE_URL: http://history:8000/history/api/
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+      RESULT_SERVICE_URL: http://results:8000/results/api/
+    volumes:
+    - ${LOGS_DIR}/controller:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8921:8000
+    labels:
+      com.cisco.s3.component: controller
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - database
+    - cache
+    - management
+  plugins:
+    image: ${DOCKER_REGISTRY}/pyats-web-plugins:${TAG}
+    hostname: plugins
+    restart: always
+    env_file: env/database.env
+    environment:
+      SERVICE_LOGS_DIR: /s3/logs
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    volumes:
+    - ${LOGS_DIR}/plugins:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8924:8000
+    labels:
+      com.cisco.s3.component: plugins
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - management
+  gateway:
+    image: ${DOCKER_REGISTRY}/pyats-web-gateway:${TAG}
+    hostname: gateway
+    restart: always
+    environment:
+      CORS_DOMAINS: '*'
+      NODE_ENV: production
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+    depends_on:
+    - auths
+    - users
+    - groups
+    - sessions
+    - management
+    volumes:
+    - ${LOGS_DIR}/gateway:/s3/logs
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8923:8000
+    labels:
+      com.cisco.s3.component: gateway
+      com.cisco.s3.component.type: microservice
+  client:
+    image: ${DOCKER_REGISTRY}/pyats-web-client:${TAG}
+    hostname: client
+    restart: always
+    volumes:
+    - ${BASE_DIR}/etc/nginx.conf:/etc/nginx/conf.d/default.conf
+    ## - ${BASE_DIR}/etc/xpresso.pem:/etc/nginx/certs/xpresso.pem
+    ## - ${BASE_DIR}/etc/xpresso.key:/etc/nginx/certs/xpresso.key
+    - ${DATA_DIR}/topology/images:/s3/images
+    - ${DATA_DIR}/upload:/upload
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    depends_on:
+    - gateway
+    ports:
+    - 80:80
+    - 443:443
+  workers:
+    image: ${DOCKER_REGISTRY}/pyats-web-cloud-worker:${TAG}
+    hostname: workers
+    restart: always
+    env_file: env/workers.env
+    environment:
+      WORK_SOURCE: $PWD/data/workers
+    volumes:
+    - ${LOGS_DIR}/workers:/s3/logs
+    - ${DATA_DIR}/workers:/s3/workers
+    - ${DOCKER_SOCK}:/var/run/docker.sock
+    # - /etc/localtime:/etc/localtime:ro
+    # - /etc/timezone:/etc/timezone:ro
+    # ports:
+    # - 8925:8000
+    labels:
+      com.cisco.s3.component: workers
+      com.cisco.s3.component.type: microservice
