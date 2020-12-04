@@ -47,6 +47,11 @@ optionally work with the team to identify, classify and/or verify the fix.
 
 Note: lower system spec will result in a much longer initial boot-up time. 
 
+
+## Migration steps
+- [Steps to upgrade to v20.12](https://github.com/CiscoTestAutomation/xpresso/wiki/How-to-upgrade-XPRESSO-to-v20.12)
+
+
 ## Deployment
 
 XPRESSO is developed using a micro-services architecture, with the services 
