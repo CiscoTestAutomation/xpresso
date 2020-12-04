@@ -97,6 +97,9 @@ server, eg, `http://xpresso.yourdomain.com/`.
 * [ OPTIONAL ]: at file `${BASE_DIR}/.env`, change `TAG` to most appropriate value for your XPRESSO instance.
 * [ OPTIONAL ]: by default no ports are exposed in Docker. For your testing purposes, you can uncomment the `ports` entry in `docker-compose.yml` file for the services you want. 
 
+***Important note***: after Xpresso is fully up, if you update configurations or change any settings at `initializers/settings.yml`, you need to update `docker-compose.yml` under `management` service and set `FORCE_UPDATE: 'True'` and restart the management service `docker-compose restart management`, in order to reflect the changes.
+
+
 **3. Start Your Engine**
 
 You're good to go:
@@ -117,36 +120,8 @@ You should be able to access XPRESSO now at http://localhost/. Enjoy!
 > the default credentials for a few minutes. Give it some time (eg, 5-10min on
 > a 2016 MacBook Pro 15)
 
-**4. Cloud Worker Setup \[optional\]**
 
-XPRESSO supports running using a Jenkins backend, or using CloudEngine (based on
-docker). In order to run ``pyATS`` jobs in XPRESSO using CloudEngine, it needs
-to have at least one CloudWorker up and running.
-
-To run a worker service, the `workers` service in docker-compose file needs a 
-`PUBLIC_KEY` from XPRESSO - which is only generated after the system starts up
-(ensuring you have a unique SSL key).
-
-To obtain the `PUBLIC_KEY`:
-* Login to the dashboard and go to `Profile > API Token` to get your 
-  authentication token. 
-* Make an HTTP request using `curl` to get XPRESSO Cloud public key, using the
-  authentication token above.
-
-```bash 
-# replace $API_TOKEN with your api token collected above
-curl -H "Authorization: $API_TOKEN" -H "Content-Type: application/json" http://localhost/controller/api/v1/public/keys
-```
-
-Get the `public_key` form response, and modify the `env/workers.env` with the 
-new pubic key and restart `workers` service
-
-```bash
-docker-compose restart workers
-```
-<br/>
-
-**5. Email and SMTP \[optional\]**
+**4. Email and SMTP \[optional\]**
 
 Modify `initializers/settings.yml` to suit your email server to enable XPRESSO to send emails. This is used for user signup / management, automated notifications of runs and reservations, and sending of result reports.
 
@@ -161,6 +136,8 @@ EMAIL_TIMEOUT: 10000
 EMAIL_SSL_KEYFILE: '/path/to/pem', // or remove
 EMAIL_SSL_CERTFILE: '/apth/to/pem' // or remove
 ```
+
+***Important note***: after Xpresso is fully up, if you update configurations or change any settings at `initializers/settings.yml`, you need to update `docker-compose.yml` under `management` service and set `FORCE_UPDATE: 'True'` and restart the management service `docker-compose restart management`, in order to reflect the changes.
 
 
 ## Administrator Login
