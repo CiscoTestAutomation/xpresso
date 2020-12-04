@@ -1,6 +1,13 @@
 source .env
 source env/database.env
 
+if [ -s dump_5.6.sql ]
+then 
+echo "Migration  is already done"
+echo "If you want to fallback to old  database,Please run fallback_to_5.6.sh"
+exit 1
+fi
+
 # Step 1: dump mysql data
 docker-compose exec -T database mysqldump -uroot -p${MYSQL_ROOT_PASSWORD} --create-options --add-drop-table --single-transaction --databases s3_auths s3_cdets s3_communications s3_controller s3_genie s3_groups s3_history s3_jenkinsengine s3_laas s3_labvpn s3_management s3_monitors s3_plugins s3_qmgr s3_registry s3_requests s3_results s3_sessions s3_testbeds s3_topoman s3_users  --skip-comments > dump_5.6.sql
 
