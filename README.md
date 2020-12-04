@@ -233,6 +233,15 @@ If services are failing to start, and logs show that they cannot connect to
 database at `database:3306`, make sure your firewalls are not blocking the 
 bridge network `192.168.66.0/24`.
 
+
+**General networking issues with Xpresso install**
+* Ensure hostname is properly set and resolvable both internally and externally to the host machine
+* Ensure DNS on the host is configured to be able to resolve its external hostname and IP
+* Ensure the `ADVERTISED_URL` in the `.env` file is set to the fully qualified external URL using hostname or IP *not localhost*
+* Ensure if a proxy is set, it does not affect traffic going to the above domain/hostname
+* Ensure nothing else is using or restricting the local `192.168.66.x` subnet (or change it to another one)
+* Ensure to switch off the Firewall: For CENTOS - `sudo systemctl stop firewalld` , Ubuntu - `sudo ufw disable`
+
 As a trial - shutdown xpresso `docker-compose down`, turn off your firewall, 
 restart docker service, and try starting xpresso again.
 
