@@ -1102,7 +1102,7 @@ services:
       start_period: 2m
       test: python manage.py beat_health_check || exit 1
   controller:
-    image: ${DOCKER_REGISTRY}/pyats-web-controller:${TAG}
+    image: ${DOCKER_REGISTRY}/pyats-web-taas-controller:${TAG}
     hostname: controller
     restart: always
     env_file: env/database.env
