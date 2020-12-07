@@ -18,6 +18,20 @@ rm  -rf data/mysql/*
 echo "copy the data from backup"
 cp -rf mysql_backup/  data/mysql/
 
+#Copy the old configs
+echo "Copy old configs"
+cp -f old_configs/docker-compose.yml .
+cp -f old_configs/nginx.conf ./etc/
+
 #start the database container
 docker-compose up -d database
 
+sleep 10
+
+# Stop the containers 
+echo " Stopping all containers" 
+docker-compose stop 
+
+echo "********************************************"
+echo "Change the  TAG in .env file as v20.6"
+echo "After this change  bring up the containers using docker-compose up -d" 
