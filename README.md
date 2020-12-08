@@ -184,6 +184,10 @@ By default, all your data and services logs are stored under `./data/` (e.i., `D
 
 ## Common Issues, Questions & Answers
 
+**Unhealthy services**
+
+If you run ``docker-compose ps`` or ``docker ps`` and see any unlealthy services, first check the logs ``docker-compose logs -f <service-name>`` or ``<LOGS_DIR>/<service-name>``. If logs are not informative, you can restart the service: ``docker-compose stop <service-name> && docker-compose up -d <service-name>``. 
+
 **Why are there references (eg, in logs) to S3?**
 
 Initially XPRESSO was called S3, with the number 3 being a superscript 
