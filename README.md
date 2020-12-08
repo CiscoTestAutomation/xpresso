@@ -47,6 +47,11 @@ optionally work with the team to identify, classify and/or verify the fix.
 
 Note: lower system spec will result in a much longer initial boot-up time. 
 
+
+## Migration steps
+- [Steps to upgrade to v20.12](https://github.com/CiscoTestAutomation/xpresso/wiki/How-to-upgrade-XPRESSO-to-v20.12)
+
+
 ## Deployment
 
 XPRESSO is developed using a micro-services architecture, with the services 
@@ -65,7 +70,7 @@ cd /workspace
 git clone https://github.com/CiscoTestAutomation/xpresso
 ```
 
-**2. Customization**
+**2. Initializations**
 
 The default set of settings should work for most users, with out of the box URL
 set to http://localhost/. Eg - you can only access XPRESSO on this localhost.
@@ -77,8 +82,13 @@ server, eg, `http://xpresso.yourdomain.com/`.
 * `BASE_DIR` is where all contents of this repo reside (`etc/`, `env/`, `initializers/`, `.env`, and `docker-compose.yml`). Default to current location (cloned repo dir). 
 * At file `${BASE_DIR}/.env` set proper value for `ADVERTISED_URL`, `INSTANCE_ID` and `TOOL_NAME`.
 * Under `${BASE_DIR}/env` there are places for further modifications as follows:
-  * `databases.en`v for the mysql root password.
+  * `databases.env` for the mysql root password, and Xpresso's database user `xpresso_admin` and its password. 
   * `elasticsearch.env` for custom changes on the elasticsearch cluster.
+* Make sure `xpresso_admin` password is the same across all these files
+  * `env/databases.env`
+  * `initializers/docker-entrypoint-initdb.d/1-user.sql`
+  * `initializers/settings.yml`
+  * `etc/mgmt_settings.py`
 * Create a dir under data dir at: `${DATA_DIR}/elastic`
   * Make the elastic data dir writable: `chmod -R 777 ${DATA_DIR}/elastic`.
 * Double check that `wait-for-it.sh` script is executable. If not, run `chmod +x wait-for-it.sh`. 
@@ -86,11 +96,15 @@ server, eg, `http://xpresso.yourdomain.com/`.
 * At file `${BASE_DIR}/.env` make sure `DATA_DIR` and `LOGS_DIR` have proper values and pointing to your desired locations.
   * `DATA_DIR` should be somewhere with sufficient disk space for XPRESSO data.
   * `LOGS_DIR` should be somewhere with sufficient disk space for XPRESSO micros-ervices logs.
-  * If data-dir is changed, you may have to update `workers` service data dir as well. Find `workers` service at `docker-compose.yml` file and update ``WORK_SOURCE`` environment variable pointing to the proper dir. 
+  
 * [ WARNING ]: in linux servers, make sure the max_map_count is set to at *least* 262144, ie `vm.max_map_count=262144`. See [elastic documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html) for details.
 * [ WARNING ]: in linux servers, uncomment the `/etc/localtime:/etc/localtime:ro` entries under volumes for all services to ensure timezone Xpresso uses matches your host.
 * [ OPTIONAL ]: at file `${BASE_DIR}/.env`, change `TAG` to most appropriate value for your XPRESSO instance.
 * [ OPTIONAL ]: by default no ports are exposed in Docker. For your testing purposes, you can uncomment the `ports` entry in `docker-compose.yml` file for the services you want. 
+
+***Important note***: after Xpresso is fully up, if you update configurations or change any settings at `initializers/settings.yml`, you need to update `docker-compose.yml` under `management` service and set `FORCE_UPDATE: 'True'` and restart the management service `docker-compose restart management`, in order to reflect the changes.
+
+
 
 **3. Start Your Engine**
 
@@ -112,34 +126,10 @@ You should be able to access XPRESSO now at http://localhost/. Enjoy!
 > the default credentials for a few minutes. Give it some time (eg, 5-10min on
 > a 2016 MacBook Pro 15)
 
-**4. Cloud Worker Setup \[optional\]**
+**4. New Xpresso Worker \[optional\]**
+New Xpresso worker (v20.11) has a lot of improveoments over the older versions. If you're willing to upgrade your Xpresso to version v20.11, you need to make sure `Worker` data directory is correct. 
+Just verify that workers data directory is located at `${BASE_DIR}/data/workers`. 
 
-XPRESSO supports running using a Jenkins backend, or using CloudEngine (based on
-docker). In order to run ``pyATS`` jobs in XPRESSO using CloudEngine, it needs
-to have at least one CloudWorker up and running.
-
-To run a worker service, the `workers` service in docker-compose file needs a 
-`PUBLIC_KEY` from XPRESSO - which is only generated after the system starts up
-(ensuring you have a unique SSL key).
-
-To obtain the `PUBLIC_KEY`:
-* Login to the dashboard and go to `Profile > API Token` to get your 
-  authentication token. 
-* Make an HTTP request using `curl` to get XPRESSO Cloud public key, using the
-  authentication token above.
-
-```bash 
-# replace $API_TOKEN with your api token collected above
-curl -H "Authorization: $API_TOKEN" -H "Content-Type: application/json" http://localhost/controller/api/v1/public/keys
-```
-
-Get the `public_key` form response, and modify the `env/workers.env` with the 
-new pubic key and restart `workers` service
-
-```bash
-docker-compose restart workers
-```
-<br/>
 
 **5. Email and SMTP \[optional\]**
 
@@ -156,6 +146,8 @@ EMAIL_TIMEOUT: 10000
 EMAIL_SSL_KEYFILE: '/path/to/pem', // or remove
 EMAIL_SSL_CERTFILE: '/apth/to/pem' // or remove
 ```
+
+***Important note***: if you do the above modifications after Xpresso is already up, you need to update `docker-compose.yml` under `management` service and set `FORCE_UPDATE: 'True'` and restart the management service `docker-compose restart management`, in order to reflect the changes.
 
 
 ## Administrator Login
@@ -183,8 +175,8 @@ the UI.
 
 ## Data & Logs
 
-By default, all your data and services logs are stored under `./data/` and
- `./logs/` directory, including database files, archives uploaded, etc. To
+By default, all your data and services logs are stored under `./data/` (e.i., `DATA_DIR`) and
+ `./logs/` (i.e., `LOGS_DIR`) directory, including database files, archives uploaded, etc. To
  wipe the server and "start from scratch" again, just delete these folders.
  
  No data is saved in the containers - everything is volume mounted to disk.
@@ -221,12 +213,22 @@ due to running on a slow server.
 Please check the logs using `docker-compose logs elasticsearch`. If it complains
 about permission issues, run: `chmod 777 data/elastic` and restart elastic using
 `docker-compose restart elasticsearch`.
+Also, make sure you've run this: `sysctl -w vm.max_map_count=262144`. 
 
 **Cannot connect to database**
 
 If services are failing to start, and logs show that they cannot connect to 
 database at `database:3306`, make sure your firewalls are not blocking the 
 bridge network `192.168.66.0/24`.
+
+
+**General networking issues with Xpresso install**
+* Ensure hostname is properly set and resolvable both internally and externally to the host machine
+* Ensure DNS on the host is configured to be able to resolve its external hostname and IP
+* Ensure the `ADVERTISED_URL` in the `.env` file is set to the fully qualified external URL using hostname or IP *not localhost*
+* Ensure if a proxy is set, it does not affect traffic going to the above domain/hostname
+* Ensure nothing else is using or restricting the local `192.168.66.x` subnet (or change it to another one)
+* Ensure to switch off the Firewall: For CENTOS - `sudo systemctl stop firewalld` , Ubuntu - `sudo ufw disable`
 
 As a trial - shutdown xpresso `docker-compose down`, turn off your firewall, 
 restart docker service, and try starting xpresso again.
