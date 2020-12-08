@@ -10,6 +10,9 @@ fi
 echo " Stop the database if running"
 docker-compose  stop database
 
+docker-compose rm -f database
+
+
 #Step 2 Remove the data/mysql/* 
 echo "Remove the data from mysql/"
 rm  -rf data/mysql/*
@@ -22,11 +25,13 @@ cp -rf mysql_backup/  data/mysql/
 echo "Copy old configs"
 cp -f old_configs/docker-compose.yml .
 cp -f old_configs/nginx.conf ./etc/
+cp -f old_configs/1-user.sql initializers/docker-entrypoint-initdb.d/1-user.sql
 
 #start the database container
 docker-compose up -d database
 
-sleep 10
+echo "Sleeping for 30 seconds"
+sleep 30
 
 # Stop the containers 
 echo " Stopping all containers" 

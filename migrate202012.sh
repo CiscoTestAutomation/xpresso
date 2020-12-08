@@ -16,6 +16,9 @@ then
     echo "Dump file is not empty, continuing migration..."
     # Step 2: stopping database service
     docker-compose stop database
+   
+    # Step :  rm data bases container
+    docker-compose rm -f database
     
     # Step 3: copy mysql data into a new dir
     echo "Backing up mysql data dir"
@@ -44,11 +47,13 @@ docker-compose exec -T database mysql -u root -p${MYSQL_ROOT_PASSWORD} < dump_5.
 
 # Step 9: results migration
 docker pull ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
-docker-compose stop results
-echo "Sleeping 40 seconds for results service to stop"
+docker-compose stop results results-celery results-beat
+sleep 10
+docker-compose rm -f results results-celery results-beat
+echo "Sleeping 30 seconds for results service to stop"
 sleep 30
 docker-compose start management results
-echo "Sleeping 40 seconds for results service to stop"
+echo "Sleeping 30 seconds for results service to stop"
 sleep 30
 docker-compose exec results python manage.py generate_snapshot
 mkdir -p logs/results2 && mv logs/results/result_snapshot.json logs/results2/result_snapshot.json
