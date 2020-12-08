@@ -102,11 +102,34 @@ server, eg, `http://xpresso.yourdomain.com/`.
 * [ OPTIONAL ]: at file `${BASE_DIR}/.env`, change `TAG` to most appropriate value for your XPRESSO instance.
 * [ OPTIONAL ]: by default no ports are exposed in Docker. For your testing purposes, you can uncomment the `ports` entry in `docker-compose.yml` file for the services you want. 
 
+
+**3. Custom LDAP Configuration (optional)**
+
+XPRESSO supports multiple LDAP authentication, by allowing you provide a list of ldap configurations. To enable this:
+
+* In `initializers/settings.yml`, under `common`, add an extra setting `LDAP_CONFIG` with the value being a list of configurations for:
+  * `LDAP_DESCRIPTION` e.g. ABC Organization LDAP
+  * `GEN_USER` e.g. gen_username
+  * `SEARCH_SCOPE` e.g. SUBTREE | BASE | LEVEL
+  * `LDAP_PROTOCOL` e.g. LDAP
+  * `LDAP_SOURCE` e.g. ABC
+  * `LDAP_NAME` e.g. ABC LDAP Auth
+  * `LDAP_HOST` e.g. internal.abc.com
+  * `SEARCH_FILTER` e.g. (uid={USER})
+  * `GEN_PASS` e.g. gen_password
+  * `SEARCH_BASE` e.g. o=internal.abc.com
+  * `SEARCH_ATTRIBUTES` e.g. ["cn", "givenName", "title", "mail"]
+
+* In same file `initializers/settings.yaml`, search under `microservices` for `auths` and modify your `AUTHENTICATION_BACKENDS` to include `authms.backends.CustomLDAPBackend`
+
+* Finally, for LDAP search, in same file `initializers/settings.yaml`, search under `microservices` for `users` and add:
+  * `SEARCH_BACKENDS`: ["user_profiles.backends.CustomLDAPSearch"]
+
 ***Important note***: after Xpresso is fully up, if you update configurations or change any settings at `initializers/settings.yml`, you need to update `docker-compose.yml` under `management` service and set `FORCE_UPDATE: 'True'` and restart the management service `docker-compose restart management`, in order to reflect the changes.
 
 
 
-**3. Start Your Engine**
+**4. Start Your Engine**
 
 You're good to go:
 ```bash
@@ -126,12 +149,12 @@ You should be able to access XPRESSO now at http://localhost/. Enjoy!
 > the default credentials for a few minutes. Give it some time (eg, 5-10min on
 > a 2016 MacBook Pro 15)
 
-**4. New Xpresso Worker \[optional\]**
+**5. New Xpresso Worker \[optional\]**
 New Xpresso worker (v20.11) has a lot of improveoments over the older versions. If you're willing to upgrade your Xpresso to version v20.11, you need to make sure `Worker` data directory is correct. 
 Just verify that workers data directory is located at `${BASE_DIR}/data/workers`. 
 
 
-**5. Email and SMTP \[optional\]**
+**6. Email and SMTP \[optional\]**
 
 Modify `initializers/settings.yml` to suit your email server to enable XPRESSO to send emails. This is used for user signup / management, automated notifications of runs and reservations, and sending of result reports.
 
