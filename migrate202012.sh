@@ -52,9 +52,9 @@ sleep 10
 docker-compose rm -f results results-celery results-beat
 echo "Sleeping 30 seconds for results service to stop"
 sleep 30
-docker-compose start management results
-echo "Sleeping 30 seconds for results service to stop"
-sleep 30
+docker-compose up -d management results
+echo "Sleeping 40 seconds for results service to start"
+sleep 40
 docker-compose exec results python manage.py generate_snapshot
 mkdir -p logs/results2 && mv logs/results/result_snapshot.json logs/results2/result_snapshot.json
 mv data/archives/cached data/archives/cached_old && mkdir data/archives/cached
