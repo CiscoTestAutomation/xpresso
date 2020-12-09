@@ -747,7 +747,7 @@ services:
     - ${DATA_DIR}/archives/cached:/s3/archives/cached
     - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
     - ${DATA_DIR}/copyservice/archives/zipped:/s3/copyservice/archives/zipped
-    - ${LOGS_DIR}/results:/s3/logs
+    - ${LOGS_DIR}/results2:/s3/logs
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
     # ports:
