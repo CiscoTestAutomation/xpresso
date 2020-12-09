@@ -406,3 +406,7 @@ microservices:
           - FINALIZING
         service_url: v1/reports
         description: optional
+  copyservice:
+    description: 'This is an upload and file handling service'
+    url: http://copyservice:9999/api/
+      
