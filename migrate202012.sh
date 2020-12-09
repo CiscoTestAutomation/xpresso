@@ -66,9 +66,15 @@ docker-compose stop
 # Step 11: pull new images
 docker-compose pull 
 
+# sleep a few seconds
+sleep 5
+
 # Step 12: start all services
 docker-compose up -d
 
 # Step 13: stop old results service
 docker-compose stop results results-celery results-beat
 docker-compose rm -f results results-celery results-beat
+
+# pull pyats-image-builder docker image
+docker pull ${DOCKER_REGISTRY}/image-builder:${TAG}
