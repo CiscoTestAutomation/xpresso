@@ -71,3 +71,4 @@ docker-compose up -d
 
 # Step 13: stop old results service
 docker-compose stop results results-celery results-beat
+docker-compose rm -f results results-celery results-beat
