@@ -41,11 +41,11 @@ common:
     - s3_requests
     zookeepers: []
   FEATURES: 
-    CDETS_SUPPORT: true
+    CDETS_SUPPORT: false
     LOCAL_REGISTRATION: true
-    STAR_REDIRECT: true
-    TCL_ATS_SUPPORT: true
-    UPLOAD_TO_TRADE: true
+    STAR_REDIRECT: false
+    TCL_ATS_SUPPORT: false
+    UPLOAD_TO_TRADE: false
   JWT_TOKEN_PREFIX: Jwt
   LANGUAGE_CODE: en-us
   REDIS: 
