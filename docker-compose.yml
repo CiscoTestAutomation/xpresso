@@ -86,7 +86,7 @@ services:
       ADVERTISED_URL: ${ADVERTISED_URL}
       INSTANCE_ID: ${INSTANCE_ID}
       TOOL_NAME: ${TOOL_NAME}
-      FORCE_UPDATE: 'false'
+      FORCE_UPDATE: 'True'
     volumes:
     - ${BASE_DIR}/etc/mgmt_settings.py:/s3/src/settings.py
     - ${BASE_DIR}/initializers:/initializers

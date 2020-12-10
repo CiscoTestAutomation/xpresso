@@ -17,18 +17,18 @@ then
     # Step 2: stopping database service
     docker-compose stop database
    
-    # Step :  rm data bases container
+    # Step 3:  rm data bases container
     docker-compose rm -f database
     
-    # Step 3: copy mysql data into a new dir
+    # Step 4: copy mysql data into a new dir
     echo "Backing up mysql data dir"
     mkdir -p mysql_backup && cp -rf  data/mysql ./mysql_backup/ && docker pull mysql/mysql-server:8.0
     
-    #Step 4: remove mysql data dir 
+    #Step 5: remove mysql data dir 
     
     rm -rf data/mysql/*
     
-    #Step 5: fix database logs persmission
+    #Step 6: fix database logs persmission
     chmod -R 777 logs/database
 else
     echo "Error: Dump file was empty, Please run the Script again" 
@@ -76,5 +76,5 @@ docker-compose up -d
 docker-compose stop results results-celery results-beat
 docker-compose rm -f results results-celery results-beat
 
-# pull pyats-image-builder docker image
+# Step 14: pull pyats-image-builder docker image
 docker pull ${DOCKER_REGISTRY}/image-builder:${TAG}
