@@ -89,6 +89,7 @@ server, eg, `http://xpresso.yourdomain.com/`.
   * `initializers/docker-entrypoint-initdb.d/1-user.sql`
   * `initializers/settings.yml`
   * `etc/mgmt_settings.py`
+* If you have updated `xpresso_admin` password from UI, update the password in the `initializers/new_settings.yml` as well.
 * Create a dir under data dir at: `${DATA_DIR}/elastic`
   * Make the elastic data dir writable: `chmod -R 777 ${DATA_DIR}/elastic`.
 * Double check that `wait-for-it.sh` script is executable. If not, run `chmod +x wait-for-it.sh`. 
@@ -102,12 +103,15 @@ server, eg, `http://xpresso.yourdomain.com/`.
 * [ OPTIONAL ]: at file `${BASE_DIR}/.env`, change `TAG` to most appropriate value for your XPRESSO instance.
 * [ OPTIONAL ]: by default no ports are exposed in Docker. For your testing purposes, you can uncomment the `ports` entry in `docker-compose.yml` file for the services you want. 
 
+* **Important**: Adding new settings or updating existing ones should be done through `initializers/new_settings.yml` file. Once done, restart ``management`` service and your setting will be updated right away. 
+Remember: you may also need to restart all other service which are supposed to use the new/update settings. 
+
 
 **3. Custom LDAP Configuration (optional)**
 
 XPRESSO supports multiple LDAP authentication, by allowing you provide a list of ldap configurations. To enable this:
 
-* In `initializers/settings.yml`, under `common`, add an extra setting `LDAP_CONFIG` with the value being a list of configurations for:
+* In `initializers/new_settings.yml`, under `common`, add/modify an extra setting `LDAP_CONFIG` with the value being a list of configurations for:
   * `LDAP_DESCRIPTION` e.g. ABC Organization LDAP
   * `GEN_USER` e.g. gen_username
   * `SEARCH_SCOPE` e.g. SUBTREE | BASE | LEVEL
@@ -120,14 +124,16 @@ XPRESSO supports multiple LDAP authentication, by allowing you provide a list of
   * `SEARCH_BASE` e.g. o=internal.abc.com
   * `SEARCH_ATTRIBUTES` e.g. ["cn", "givenName", "title", "mail"]
 
-* In same file `initializers/settings.yaml`, search under `microservices` for `auths` and modify your `AUTHENTICATION_BACKENDS` to include `authms.backends.CustomLDAPBackend`
+* In same file `initializers/new_settings.yml`, under `microservices` add (if not exists) `auths` service and modify your `AUTHENTICATION_BACKENDS` to include `authms.backends.CustomLDAPBackend`
 
-* Finally, for LDAP search, in same file `initializers/settings.yaml`, search under `microservices` for `users` and add:
+* Finally, for LDAP search, in same file `initializers/new_settings.yml`, search under `microservices` for `users` and add:
   * `SEARCH_BACKENDS`: ["user_profiles.backends.CustomLDAPSearch"]
 
-***Important note***: after Xpresso is fully up, if you update configurations or change any settings at `initializers/settings.yml`, you need to update `docker-compose.yml` under `management` service and set `FORCE_UPDATE: 'True'` and restart the management service `docker-compose restart management`, in order to reflect the changes.
+* When updating microservices' settings, make sure to include `url` and `description` as well. To make sure you're not making a mistake, you can copy each service's settings from `initializers/settings.yml` file and modify at new_settings.yml
 
+* Restart the management service `docker-compose restart management`, in order to reflect the changes.
 
+**Important**: whatever is set in `initializers/new_settings.yml` will overwritte the initial settings. 
 
 **4. Start Your Engine**
 
@@ -156,7 +162,7 @@ Just verify that workers data directory is located at `${BASE_DIR}/data/workers`
 
 **6. Email and SMTP \[optional\]**
 
-Modify `initializers/settings.yml` to suit your email server to enable XPRESSO to send emails. This is used for user signup / management, automated notifications of runs and reservations, and sending of result reports.
+Add or modify `initializers/new_settings.yml` under `common` section to suit your email server to enable XPRESSO to send emails. This is used for user signup / management, automated notifications of runs and reservations, and sending of result reports.
 
 ``` yaml
 EMAIL_HOST: 'my-smtp-server'
@@ -170,7 +176,8 @@ EMAIL_SSL_KEYFILE: '/path/to/pem', // or remove
 EMAIL_SSL_CERTFILE: '/apth/to/pem' // or remove
 ```
 
-***Important note***: if you do the above modifications after Xpresso is already up, you need to update `docker-compose.yml` under `management` service and set `FORCE_UPDATE: 'True'` and restart the management service `docker-compose restart management`, in order to reflect the changes.
+**Important**: Adding new settings or updating existing ones should be done through `initializers/new_settings.yml` file. Once done, restart ``management`` service and your setting will be updated right away. 
+Remember: you may also need to restart all other service which are supposed to use the new/update settings. 
 
 
 ## Administrator Login
