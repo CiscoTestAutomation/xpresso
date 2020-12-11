@@ -86,11 +86,13 @@ services:
       ADVERTISED_URL: ${ADVERTISED_URL}
       INSTANCE_ID: ${INSTANCE_ID}
       TOOL_NAME: ${TOOL_NAME}
-      FORCE_UPDATE: 'True'
+      FORCE_UPDATE: 'False'
+      MGMT_DYNAMIC_SETTINGS: /initializers/new_settings.yml
+      SERVICE_LOGS_DIR: /s3/logs
     volumes:
     - ${BASE_DIR}/etc/mgmt_settings.py:/s3/src/settings.py
     - ${BASE_DIR}/initializers:/initializers
-    - ${LOGS_DIR}:/s3/logs
+    - ${LOGS_DIR}/management:/s3/logs
     - ${DOCKER_SOCK}:/var/run/docker.sock
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro

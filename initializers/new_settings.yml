@@ -1,0 +1,24 @@
+common:
+  FEATURES: 
+    CDETS_SUPPORT: false
+    LOCAL_REGISTRATION: true
+    STAR_REDIRECT: false
+    TCL_ATS_SUPPORT: false
+    UPLOAD_TO_TRADE: false
+    SERVICE_TOPOMAN: true
+    SERVICE_REGISTRY: true
+    SERVICE_LAAS: false
+    SERVICE_REQUESTS: true
+    SERVICE_JENKINS: true
+    SERVICE_LABVPN: false
+    SERVICE_PLUGINS: true
+    SERVICE_RESULTS: true
+    SERVICE_CLOUDS: true
+    SERVICE_CONTROLLER: true
+microservices:
+  results:
+    description: 'A service for viewing run results and associated data'
+    url: http://results2:8000/results/api/
+  copyservice:
+    description: 'This is an upload and file handling service'
+    url: http://copyservice:9999/api/
