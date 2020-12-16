@@ -67,6 +67,7 @@ services:
     volumes:
       - ${DATA_DIR}/copyservice:/usr/src/copyservice/uploads
       - ${LOGS_DIR}/copyservice:/s3/logs
+      - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
     # ports:
