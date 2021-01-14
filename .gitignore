@@ -56,7 +56,6 @@ pkgs/examples-pkg/examples/genie
 
 # xpresso dirs
 data
-logs/
 repos
 mysql_backup
 dump_5.6.sql
