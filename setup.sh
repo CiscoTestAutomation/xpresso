@@ -23,4 +23,5 @@ sed -i '/ADVERTISED_URL/d' ./.env
 echo 'ADVERTISED_URL=$1' >> ./.env
 
 sed -i '/max_map_count/d' /etc/sysctl.conf
-echo 'sysctl -w vm.max_map_count=262141' >> ./.env
+echo 'sysctl -w vm.max_map_count=262141' >> /etc/sysctl.conf
+
