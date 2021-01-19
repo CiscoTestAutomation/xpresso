@@ -51,8 +51,6 @@ Note: lower system spec will result in a much longer initial boot-up time.
 
 - [Steps to upgrade to v20.12](https://github.com/CiscoTestAutomation/xpresso/wiki/How-to-upgrade-XPRESSO-to-v20.12)
 
-## Quick start
-
 ## Deployment
 
 XPRESSO is developed using a micro-services architecture, with the services
@@ -78,7 +76,7 @@ Run the ./setup.sh script to get a quick start on installing XPRESSO.
 
 `./setup.sh <ADVERTISED_URL>`
 
-`./setup.sh http://xpresso_test.cisco.com`
+`./setup.sh http://my_xpresso.cisco.com`
 
 Follow the prompts to easily setup XPRESSO with the default settings.
 
