@@ -72,7 +72,7 @@ git clone https://github.com/CiscoTestAutomation/xpresso
 
 **2. a) Initializations (Quick start script)**
 
-Run the ./setup.sh script to get a quick start on installing XPRESSO.
+Run the setup script to get a quick start on installing XPRESSO.
 
 `sudo bash setup.sh <ADVERTISED_URL>`
 
