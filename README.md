@@ -78,7 +78,9 @@ Run the ./setup.sh script to get a quick start on installing XPRESSO.
 
 `sudo bash setup.sh http://my_xpresso.cisco.com`
 
-Follow the prompts to easily setup XPRESSO with the default settings. For a more detailed installation follow the (Full details) section.
+Follow the prompts to easily setup XPRESSO with the default settings.
+
+> For a more detailed installation follow the (Full details) section below.
 
 **2. b) Initializations (Full details)**
 
