@@ -1117,6 +1117,7 @@ services:
       REDIS_HOST: cache
       WS_HOST: wsgateway
       WS_PORT: '8000'
+      IMAGE_LOG_DIR: /s3/data
       RESULT_SERVICE_URL: ${ADVERTISED_URL}
       RESULTS_ENDPOINT: api/v1/upload/results
     volumes:
