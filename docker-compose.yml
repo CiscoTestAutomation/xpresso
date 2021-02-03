@@ -1152,7 +1152,84 @@ services:
       com.cisco.s3.component: plugins
       com.cisco.s3.component.type: microservice
     depends_on:
-      - management
+    - management
+  aggregator:
+    image: ${DOCKER_REGISTRY}/pyats-web-aggregator:${TAG}
+    hostname: aggregator
+    restart: always
+    environment:
+      SERVICE_LOGS_DIR: /s3/logs
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+      EXTERNAL_KAFKA_HOSTS: sjc-ddkafka-01.cisco.com:9092,sjc-ddkafka-02.cisco.com:9092,sjc-ddkafka-03.cisco.com:9092,sjc-ddkafka-04.cisco.com:9092,sjc-ddkafka-05.cisco.com:9092
+      EXTERNAL_KAFKA_TOPIC: C2k8NxB5hTiF.xpresso_aggregator
+      EXTERNAL_KAFKA_REQUEST_TOPIC: C2k8NxB5hTiF.xpresso_requests
+    volumes:
+    - ${LOGS_DIR}/aggregator:/s3/logs
+    ports:
+    - 8926:8000
+    labels:
+      com.cisco.s3.component: aggregator
+      com.cisco.s3.component.type: microservice
+    depends_on:
+    - gateway
+    - database
+    - cache
+  aggregator-celery:
+    image: ${DOCKER_REGISTRY}/pyats-web-aggregator:${TAG}
+    hostname: aggregator_celery
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: agg_request
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+      EXTERNAL_KAFKA_HOSTS: sjc-ddkafka-01.cisco.com:9092,sjc-ddkafka-02.cisco.com:9092,sjc-ddkafka-03.cisco.com:9092,sjc-ddkafka-04.cisco.com:9092,sjc-ddkafka-05.cisco.com:9092
+      EXTERNAL_KAFKA_TOPIC: C2k8NxB5hTiF.xpresso_aggregator
+      EXTERNAL_KAFKA_REQUEST_TOPIC: C2k8NxB5hTiF.xpresso_requests
+    volumes:
+    - ${LOGS_DIR}/aggregator:/s3/logs
+    labels:
+      com.cisco.s3.component: aggregator
+      com.cisco.s3.component.type: celery
+    depends_on:
+    - aggregator
+    command: celery -A agg_request worker -l debug -E --logfile=/s3/logs/celery.log
+    healthcheck:
+      interval: 1m
+      start_period: 30s
+      test: celery inspect ping -A agg_request -d celery@aggregator_celery || exit 1
+  aggregator-beat:
+    image: ${DOCKER_REGISTRY}/pyats-web-aggregator:${TAG}
+    hostname: aggregator_beat
+    restart: always
+    environment:
+      CELERY_TASK_DEFAULT_QUEUE: agg_request
+      LOCAL_SETTINGS_MODULE: local_settings
+      MGMT_SERVICE_URL: http://management:8000/management/api/
+      EXTERNAL_KAFKA_HOSTS: sjc-ddkafka-01.cisco.com:9092,sjc-ddkafka-02.cisco.com:9092,sjc-ddkafka-03.cisco.com:9092,sjc-ddkafka-04.cisco.com:9092,sjc-ddkafka-05.cisco.com:9092
+      EXTERNAL_KAFKA_TOPIC: C2k8NxB5hTiF.xpresso_aggregator
+      EXTERNAL_KAFKA_REQUEST_TOPIC: C2k8NxB5hTiF.xpresso_requests
+    volumes:
+    - ${LOGS_DIR}/aggregator:/s3/logs
+    - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+    labels:
+      com.cisco.s3.component: aggregator
+      com.cisco.s3.component.type: celery-beat
+    depends_on:
+    - aggregator
+    command:
+    - wait-for-it.sh
+    - aggregator:8000
+    - --timeout=${WAIT_TIMEOUT}
+    - --strict
+    - --
+    - bash
+    - -c
+    - "celery -A agg_request beat -l info"
+    healthcheck:
+      interval: 1m
+      start_period: 2m
+      test: python manage.py beat_health_check || exit 1
   gateway:
     image: ${DOCKER_REGISTRY}/pyats-web-gateway:${TAG}
     hostname: gateway

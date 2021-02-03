@@ -50,6 +50,7 @@ Note: lower system spec will result in a much longer initial boot-up time.
 
 ## Migration steps
 - [Steps to upgrade to v20.12](https://github.com/CiscoTestAutomation/xpresso/wiki/How-to-upgrade-XPRESSO-to-v20.12)
+- [Steps to upgrade to v21.1](https://github.com/CiscoTestAutomation/xpresso/wiki/How-to-upgrade-XPRESSO-to-v21.1)
 
 
 ## Deployment

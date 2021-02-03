@@ -137,3 +137,9 @@ GRANT ALL PRIVILEGES ON `s3_topoman`.* TO 'xpresso_admin'@'192.168.66.%'   WITH 
 CREATE DATABASE s3_users;
 GRANT ALL PRIVILEGES ON `s3_users`.* TO 'xpresso_admin'@'localhost'   WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON `s3_users`.* TO 'xpresso_admin'@'192.168.66.%'   WITH GRANT OPTION;
+
+
+
+CREATE DATABASE s3_aggregator;
+GRANT ALL PRIVILEGES ON `s3_aggregator`.* TO 'xpresso_admin'@'localhost'   WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON `s3_aggregator`.* TO 'xpresso_admin'@'192.168.66.%'   WITH GRANT OPTION;

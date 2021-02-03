@@ -419,4 +419,17 @@ microservices:
   copyservice:
     description: 'This is an upload and file handling service'
     url: http://copyservice:9999/api/
+  aggregator:
+    description: 'A service for aggregating XPRESSO cross group requests.'
+    url: http://aggregator:8000/aggregator/api/
+    settings:
+      DATABASES:
+        default: 
+          NAME: s3_aggregator
+      REQUEST_ID_LENGTH: 10
+      WEBEX: true
+      REQUEST_PREFIX: AGG
+      TOPIC: 
+        key: aggregator_data
+        name: s3_aggregator
       
