@@ -17,7 +17,10 @@ while true; do
     esac
 done
 
-sed -i .bak '/ADVERTISED_URL/d' ./.env;
+# comment this for mac OS
+# sed -i .bak '/ADVERTISED_URL/d' ./.env;
+
+sed -i '/ADVERTISED_URL/d' ./.env;
 echo "ADVERTISED_URL=$1" >> ./.env;
 
 
