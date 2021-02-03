@@ -42,7 +42,7 @@ echo -e "${RED}Writing 'sysctl -w vm.max_map_count=262144' to '/etc/sysctl.conf'
 while true; do
     read -p "Do you wish to edit /etc/sysctl.conf?" yn
     case $yn in
-        [Yy]* ) sed -i .bak '/max_map_count/d' /etc/sysctl.conf; echo 'sysctl -w vm.max_map_count=262144' >> /etc/sysctl.conf; echo "file written"; break;;
+        [Yy]* ) sed -i '/max_map_count/d' /etc/sysctl.conf; echo 'sysctl -w vm.max_map_count=262144' >> /etc/sysctl.conf; echo "file written"; break;;
         [Nn]* ) break;;
         * ) echo "Please answer yes or no.";;
     esac
