@@ -1114,6 +1114,7 @@ services:
       SERVICE_LOGS_DIR: /s3/logs
       HISTORY_SERVICE_URL: http://history:8000/history/api/
       MGMT_SERVICE_URL: http://management:8000/management/api/
+      IMAGE_LOG_DIR: /s3/data
       REDIS_HOST: cache
       WS_HOST: wsgateway
       WS_PORT: '8000'
