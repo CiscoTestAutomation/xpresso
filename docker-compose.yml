@@ -1124,6 +1124,7 @@ services:
     volumes:
       - ${DATA_DIR}/controller:/s3/data
       - ${LOGS_DIR}/controller:/s3/logs
+      - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
     # ports:
