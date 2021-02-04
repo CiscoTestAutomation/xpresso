@@ -1134,6 +1134,16 @@ services:
     depends_on:
       - database
       - cache
+      - wsgateway
+    command:
+     - wait-for-it.sh
+     - database:3306
+     - --timeout=${WAIT_TIMEOUT}
+     - --strict
+     - --
+     - bash
+     - -c
+     - "/taas/entrypoint.sh"
   plugins:
     image: ${DOCKER_REGISTRY}/pyats-web-plugins:${TAG}
     hostname: plugins
