@@ -37,9 +37,9 @@ common:
   #   SEARCH_ATTRIBUTES:
   #   - title
 microservices:
-  results:
-    description: 'A service for viewing run results and associated data'
-    url: http://results2:8000/results/api/
+  # results:
+  #   description: 'A service for viewing run results and associated data'
+  #   url: http://results2:8000/results/api/
   copyservice:
     description: 'This is an upload and file handling service'
     url: http://copyservice:9999/api/

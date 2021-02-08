@@ -656,89 +656,89 @@ services:
     depends_on:
       - registry
     command: celery -A jobs.celery worker -l info -E
+  # results:
+  #   image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
+  #   hostname: results
+  #   restart: always
+  #   environment:
+  #     CELERY_TASK_DEFAULT_QUEUE: s3_results.results_celery
+  #     LOCAL_SETTINGS_MODULE: local_settings
+  #     MGMT_SERVICE_URL: http://management:8000/management/api/
+  #   volumes:
+  #     - ${DATA_DIR}/archives/cached:/s3/archives/cached
+  #     - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
+  #     - ${LOGS_DIR}/results:/s3/logs
+  #   # - /etc/localtime:/etc/localtime:ro
+  #   # - /etc/timezone:/etc/timezone:ro
+  #   # ports:
+  #   # - 8915:8000
+  #   labels:
+  #     com.cisco.s3.component: results
+  #     com.cisco.s3.component.type: microservice
+  #   depends_on:
+  #     - database
+  #     - cache
+  #     - management
+  # results-celery:
+  #   image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
+  #   hostname: results_celery
+  #   restart: always
+  #   environment:
+  #     CELERY_TASK_DEFAULT_QUEUE: s3_results.results_celery
+  #     LOCAL_SETTINGS_MODULE: local_settings
+  #     MGMT_SERVICE_URL: http://management:8000/management/api/
+  #   volumes:
+  #     - ${DATA_DIR}/archives/cached:/s3/archives/cached
+  #     - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
+  #     - ${LOGS_DIR}/results:/s3/logs
+  #   # - /etc/localtime:/etc/localtime:ro
+  #   # - /etc/timezone:/etc/timezone:ro
+  #   labels:
+  #     com.cisco.s3.component: results
+  #     com.cisco.s3.component.type: celery
+  #   depends_on:
+  #     - results
+  #   command: celery -A s3_results.results_celery worker -l info -E
+  #   healthcheck:
+  #     interval: 1m
+  #     start_period: 30s
+  #     test: celery inspect ping -A s3_results.results_celery -d celery@results_celery || exit 1
+  # results-beat:
+  #   image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
+  #   hostname: results_beat
+  #   restart: always
+  #   environment:
+  #     CELERY_TASK_DEFAULT_QUEUE: s3_results.results_celery
+  #     LOCAL_SETTINGS_MODULE: local_settings
+  #     MGMT_SERVICE_URL: http://management:8000/management/api/
+  #   volumes:
+  #     - ${DATA_DIR}/archives/cached:/s3/archives/cached
+  #     - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
+  #     - ${LOGS_DIR}/results:/s3/logs
+  #     - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
+  #   # - /etc/localtime:/etc/localtime:ro
+  #   # - /etc/timezone:/etc/timezone:ro
+  #   labels:
+  #     com.cisco.s3.component: results
+  #     com.cisco.s3.component.type: celery-beat
+  #   depends_on:
+  #     - results
+  #   command:
+  #     - wait-for-it.sh
+  #     - results:8000
+  #     - --timeout=${WAIT_TIMEOUT}
+  #     - --strict
+  #     - --
+  #     - bash
+  #     - -c
+  #     - 'celery -A s3_results.results_celery beat -l info -S django'
+  #   healthcheck:
+  #     interval: 1m
+  #     start_period: 2m
+  #     test: python manage.py beat_health_check || exit 1
   results:
-    image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
-    hostname: results
-    restart: always
-    environment:
-      CELERY_TASK_DEFAULT_QUEUE: s3_results.results_celery
-      LOCAL_SETTINGS_MODULE: local_settings
-      MGMT_SERVICE_URL: http://management:8000/management/api/
-    volumes:
-      - ${DATA_DIR}/archives/cached:/s3/archives/cached
-      - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
-      - ${LOGS_DIR}/results:/s3/logs
-    # - /etc/localtime:/etc/localtime:ro
-    # - /etc/timezone:/etc/timezone:ro
-    # ports:
-    # - 8915:8000
-    labels:
-      com.cisco.s3.component: results
-      com.cisco.s3.component.type: microservice
-    depends_on:
-      - database
-      - cache
-      - management
-  results-celery:
-    image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
-    hostname: results_celery
-    restart: always
-    environment:
-      CELERY_TASK_DEFAULT_QUEUE: s3_results.results_celery
-      LOCAL_SETTINGS_MODULE: local_settings
-      MGMT_SERVICE_URL: http://management:8000/management/api/
-    volumes:
-      - ${DATA_DIR}/archives/cached:/s3/archives/cached
-      - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
-      - ${LOGS_DIR}/results:/s3/logs
-    # - /etc/localtime:/etc/localtime:ro
-    # - /etc/timezone:/etc/timezone:ro
-    labels:
-      com.cisco.s3.component: results
-      com.cisco.s3.component.type: celery
-    depends_on:
-      - results
-    command: celery -A s3_results.results_celery worker -l info -E
-    healthcheck:
-      interval: 1m
-      start_period: 30s
-      test: celery inspect ping -A s3_results.results_celery -d celery@results_celery || exit 1
-  results-beat:
-    image: ${DOCKER_REGISTRY}/pyats-web-results:${TAG}
-    hostname: results_beat
-    restart: always
-    environment:
-      CELERY_TASK_DEFAULT_QUEUE: s3_results.results_celery
-      LOCAL_SETTINGS_MODULE: local_settings
-      MGMT_SERVICE_URL: http://management:8000/management/api/
-    volumes:
-      - ${DATA_DIR}/archives/cached:/s3/archives/cached
-      - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
-      - ${LOGS_DIR}/results:/s3/logs
-      - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh
-    # - /etc/localtime:/etc/localtime:ro
-    # - /etc/timezone:/etc/timezone:ro
-    labels:
-      com.cisco.s3.component: results
-      com.cisco.s3.component.type: celery-beat
-    depends_on:
-      - results
-    command:
-      - wait-for-it.sh
-      - results:8000
-      - --timeout=${WAIT_TIMEOUT}
-      - --strict
-      - --
-      - bash
-      - -c
-      - 'celery -A s3_results.results_celery beat -l info -S django'
-    healthcheck:
-      interval: 1m
-      start_period: 2m
-      test: python manage.py beat_health_check || exit 1
-  results2:
     image: ${DOCKER_REGISTRY}/pyats-web-results2:${TAG}
-    hostname: results2
+    hostname: results
     restart: always
     env_file: env/database.env
     environment:
@@ -750,13 +750,13 @@ services:
       - ${DATA_DIR}/archives/cached:/s3/archives/cached
       - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
       - ${DATA_DIR}/copyservice/archives/zipped:/s3/copyservice/archives/zipped
-      - ${LOGS_DIR}/results2:/s3/logs
+      - ${LOGS_DIR}/results:/s3/logs
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
     # ports:
     # - 8915:8000
     labels:
-      com.cisco.s3.component: results2
+      com.cisco.s3.component: results
       com.cisco.s3.component.type: microservice
     depends_on:
       - database
