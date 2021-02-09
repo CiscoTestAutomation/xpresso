@@ -117,7 +117,7 @@ MICROSERVICES_LOGS_ROOT = '/s3/logs'
 
 # Logs
 # ----
-LOGGING_ROOT = os.environ.get('SERVICE_LOGS_DIR', '/tmp')
+LOGGING_ROOT = os.environ.get('SERVICE_LOGS_DIR', '/s3/logs')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
