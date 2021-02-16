@@ -72,6 +72,12 @@ git clone https://github.com/CiscoTestAutomation/xpresso
 ```
 
 **2. Initializations**
+For initialization , you can use setup script. This script would initiliaze your basic settings except settings related with database settings.
+```
+./setup.sh  http://youmachinehostname/
+
+```
+Or you can  follow the steps below.
 
 The default set of settings should work for most users, with out of the box URL
 set to http://localhost/. Eg - you can only access XPRESSO on this localhost.
@@ -106,6 +112,8 @@ server, eg, `http://xpresso.yourdomain.com/`.
 
 * **Important**: Adding new settings or updating existing ones should be done through `initializers/new_settings.yml` file. Once done, restart ``management`` service and your setting will be updated right away. 
 Remember: you may also need to restart all other service which are supposed to use the new/update settings. 
+
+
 
 
 **3. Custom LDAP Configuration (optional)**
