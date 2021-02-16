@@ -71,14 +71,26 @@ cd /workspace
 git clone https://github.com/CiscoTestAutomation/xpresso
 ```
 
-**2. Initializations**
-For initialization , you can use setup script. This script would initiliaze your basic settings except settings related with database settings.
+**2.1 Initializing using setup script**
+Before running the setup script
+ Make sure `xpresso_admin` password is the same across all these files
+  * `env/databases.env`
+  * `initializers/docker-entrypoint-initdb.d/1-user.sql`
+  * `initializers/settings.yml`
+  * `etc/mgmt_settings.py`
+* If you have updated `xpresso_admin` password from UI, update the password in the `initializers/new_settings.yml` as well.
+
+Now run the script with providing the proper URL of the server.
+
 ```
 ./setup.sh  http://youmachinehostname/
 
 ```
-Or you can  follow the steps below.
 
+Or you can setup using manual steps.
+
+
+**2.2 Initializations using Manual steps**
 The default set of settings should work for most users, with out of the box URL
 set to http://localhost/. Eg - you can only access XPRESSO on this localhost.
 
