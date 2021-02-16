@@ -71,7 +71,8 @@ cd /workspace
 git clone https://github.com/CiscoTestAutomation/xpresso
 ```
 
-**2.1 Initializing using setup script**
+**2.1. Initializing using setup script**
+
 Before running the setup script
  Make sure `xpresso_admin` password is the same across all these files
   * `env/databases.env`
@@ -87,10 +88,11 @@ Now run the script with providing the proper URL of the server.
 
 ```
 
-Or you can setup using manual steps.
+Or you can setup using manual steps given in 2.2.
 
 
-**2.2 Initializations using Manual steps**
+**2.2. Initializations using Manual steps**
+
 The default set of settings should work for most users, with out of the box URL
 set to http://localhost/. Eg - you can only access XPRESSO on this localhost.
 
