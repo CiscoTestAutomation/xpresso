@@ -1295,6 +1295,7 @@ services:
   workers:
     image: ${DOCKER_REGISTRY}/pyats-web-taas-worker:${TAG}
     hostname: workers
+    network_mode: "host"
     restart: always
     env_file: env/workers.env
     environment:
