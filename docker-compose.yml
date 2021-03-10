@@ -1301,8 +1301,8 @@ services:
     environment:
       WORK_SOURCE: $PWD/data/workers
       WORKER_LABEL: pyats-worker-1
-      WS_HOST: wsgateway
-      WS_PORT: '8000'
+      WS_HOST: localhost
+      WS_PORT: '8927'
       BUILDER_IMAGE_NAME: ${DOCKER_REGISTRY}/image-builder:${TAG}
       SERVICE_URL: ${ADVERTISED_URL}:8925/workers/api/v1
     volumes:
@@ -1330,8 +1330,8 @@ services:
       - ${LOGS_DIR}/wsgateway:/taas/logs
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
-    # ports:
-    # - 8927:8000
+    ports:
+    - 8927:8000
     depends_on:
       - cache
     labels:
