@@ -112,7 +112,7 @@ Remember: you may also need to restart all other service which are supposed to u
 
 XPRESSO supports multiple LDAP authentication, by allowing you provide a list of ldap configurations. To enable this:
 
-* In `initializers/new_settings.yml`, under `common`, add/modify an extra setting `LDAP_CONFIG` with the value being a list of configurations for:
+* In `initializers/settings.yml`, under `common`, add/modify an extra setting `LDAP_CONFIG` with the value being a list of configurations for:
   * `LDAP_DESCRIPTION` e.g. ABC Organization LDAP
   * `GEN_USER` e.g. gen_username
   * `SEARCH_SCOPE` e.g. SUBTREE | BASE | LEVEL
@@ -125,16 +125,16 @@ XPRESSO supports multiple LDAP authentication, by allowing you provide a list of
   * `SEARCH_BASE` e.g. o=internal.abc.com
   * `SEARCH_ATTRIBUTES` e.g. ["cn", "givenName", "title", "mail"]
 
-* In same file `initializers/new_settings.yml`, under `microservices` add (if not exists) `auths` service and modify your `AUTHENTICATION_BACKENDS` to include `authms.backends.CustomLDAPBackend`
+* In same file `initializers/settings.yml`, under `microservices` add (if not exists) `auths` service and modify your `AUTHENTICATION_BACKENDS` to include `authms.backends.CustomLDAPBackend`
 
-* Finally, for LDAP search, in same file `initializers/new_settings.yml`, search under `microservices` for `users` and add:
+* Finally, for LDAP search, in same file `initializers/settings.yml`, search under `microservices` for `users` and add:
   * `SEARCH_BACKENDS`: ["user_profiles.backends.CustomLDAPSearch"]
 
-* When updating microservices' settings, make sure to include `url` and `description` as well. To make sure you're not making a mistake, you can copy each service's settings from `initializers/settings.yml` file and modify at new_settings.yml
+* When updating microservices' settings, make sure to include `url` and `description` as well.
 
 * Restart the management service `docker-compose restart management`, in order to reflect the changes.
 
-**Important**: whatever is set in `initializers/new_settings.yml` will overwritte the initial settings. 
+**Important**: whatever is set in `initializers/settings.yml` will be the initial settings. 
 
 **4. Start Your Engine**
 
