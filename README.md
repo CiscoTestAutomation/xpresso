@@ -71,7 +71,27 @@ cd /workspace
 git clone https://github.com/CiscoTestAutomation/xpresso
 ```
 
-**2. Initializations**
+**2.1. Initializing using setup script**
+
+Before running the setup script
+ Make sure `xpresso_admin` password is the same across all these files
+  * `env/databases.env`
+  * `initializers/docker-entrypoint-initdb.d/1-user.sql`
+  * `initializers/settings.yml`
+  * `etc/mgmt_settings.py`
+* If you have updated `xpresso_admin` password from UI, update the password in the `initializers/new_settings.yml` as well.
+
+Now run the script with providing the proper URL of the server.
+
+```
+./setup.sh  http://youmachinehostname/
+
+```
+
+Or you can setup using manual steps given in 2.2.
+
+
+**2.2. Initializations using Manual steps**
 
 The default set of settings should work for most users, with out of the box URL
 set to http://localhost/. Eg - you can only access XPRESSO on this localhost.
@@ -106,6 +126,8 @@ server, eg, `http://xpresso.yourdomain.com/`.
 
 * **Important**: Adding new settings or updating existing ones should be done through `initializers/new_settings.yml` file. Once done, restart ``management`` service and your setting will be updated right away. 
 Remember: you may also need to restart all other service which are supposed to use the new/update settings. 
+
+
 
 
 **3. Custom LDAP Configuration (optional)**
