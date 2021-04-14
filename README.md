@@ -71,9 +71,9 @@ cd /workspace
 git clone https://github.com/CiscoTestAutomation/xpresso
 ```
 
-**2 Initializing using setup script**
+**2. Initializing using setup script**
 
-NOTE: If you want to do manual setup , then you can skip this step.
+**NOTE:** If you want to do manual setup , then you can skip this step.
 
 Run the script with providing the proper URL of the server.
 
@@ -85,7 +85,7 @@ Run the script with providing the proper URL of the server.
 After this script, you can skip the next step.
 
 
-**2. Initializations**
+**3. Initializations**
 
 The default set of settings should work for most users, with out of the box URL
 set to http://localhost/. Eg - you can only access XPRESSO on this localhost.
