@@ -71,6 +71,20 @@ cd /workspace
 git clone https://github.com/CiscoTestAutomation/xpresso
 ```
 
+**2 Initializing using setup script**
+
+NOTE: If you want to do manual setup , then you can skip this step.
+
+Run the script with providing the proper URL of the server.
+
+```
+./setup.sh  http://youmachinehostname/
+
+```
+
+After this script, you can skip the next step.
+
+
 **2. Initializations**
 
 The default set of settings should work for most users, with out of the box URL
