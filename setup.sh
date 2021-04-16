@@ -18,6 +18,15 @@ while true; do
     esac
 done
 
+
+if [[ "$1" == */ ]]; then
+   echo ""
+else
+   echo -e "${RED}'/'  not exists in the end in your given url.${NC}"
+   exit
+fi
+
+
 # comment this for mac OS
 # sed -i .bak '/ADVERTISED_URL/d' ./.env;
 
@@ -50,9 +59,17 @@ while true; do
 done
 
 
-echo -e "${GREEN}Setup complete!${NC}";
+echo -e "${GREEN}Initialization of Setup complete!${NC}";
 
-
+echo -e "${YLW}Bringing up the database....${NC}";
 docker-compose up -d database cache elasticsearch
+
+sleep  30
+
+echo -e "${YLW}Bringing up the management service....${NC}";
+
+docker-compose up -d  management
+
+sleep  10
 
 echo -e "${GREEN}run: 'docker-compose up -d' to start xpresso.${NC}";
