@@ -64,12 +64,12 @@ echo -e "${GREEN}Initialization of Setup complete!${NC}";
 echo -e "${YLW}Bringing up the database....${NC}";
 docker-compose up -d database cache elasticsearch
 
-sleep  30
+sleep 50
 
 echo -e "${YLW}Bringing up the management service....${NC}";
 
 docker-compose up -d  management
 
-sleep  10
+sleep  20
 
 echo -e "${GREEN}run: 'docker-compose up -d' to start xpresso.${NC}";
