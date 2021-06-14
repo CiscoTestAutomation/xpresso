@@ -85,7 +85,7 @@ Run the script with providing the proper URL of the server.
 After this script, you can skip the next step.
 
 
-**3. Initializations**
+**3. Manual Initialization**
 
 The default set of settings should work for most users, with out of the box URL
 set to http://localhost/. Eg - you can only access XPRESSO on this localhost.
@@ -93,6 +93,8 @@ set to http://localhost/. Eg - you can only access XPRESSO on this localhost.
 To make the instance available for other users on your network to access, modify
 the `.env` file and set the `ADVERTISED_URL` to the full, proper URL of this
 server, eg, `http://xpresso.yourdomain.com/`.
+
+**IMPORTANT:** Go through **all** steps in this section. If you skip a step not explicitly marked "optional" you **will** encounter issues.
 
 * `BASE_DIR` is where all contents of this repo reside (`etc/`, `env/`, `initializers/`, `.env`, and `docker-compose.yml`). Default to current location (cloned repo dir). 
 * At file `${BASE_DIR}/.env` set proper value for `ADVERTISED_URL`, `INSTANCE_ID` and `TOOL_NAME`.
@@ -112,9 +114,10 @@ server, eg, `http://xpresso.yourdomain.com/`.
 * At file `${BASE_DIR}/.env` make sure `DATA_DIR` and `LOGS_DIR` have proper values and pointing to your desired locations.
   * `DATA_DIR` should be somewhere with sufficient disk space for XPRESSO data.
   * `LOGS_DIR` should be somewhere with sufficient disk space for XPRESSO micros-ervices logs.
+* **[ WARNING ]**: double check the permissions on the DATA_DIR, LOGS_DIR, and their subdirectories.
   
-* [ WARNING ]: in linux servers, make sure the max_map_count is set to at *least* 262144, ie `vm.max_map_count=262144`. See [elastic documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html) for details.
-* [ WARNING ]: in linux servers, uncomment the `/etc/localtime:/etc/localtime:ro` entries under volumes for all services to ensure timezone Xpresso uses matches your host.
+* **[ WARNING ]**: in linux servers, make sure the max_map_count is set to at *least* 262144, ie `vm.max_map_count=262144`. See [elastic documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html) for details.
+* **[ WARNING ]**: in linux servers, uncomment the `/etc/localtime:/etc/localtime:ro` entries under volumes for all services to ensure timezone Xpresso uses matches your host.
 * [ OPTIONAL ]: at file `${BASE_DIR}/.env`, change `TAG` to most appropriate value for your XPRESSO instance.
 * [ OPTIONAL ]: by default no ports are exposed in Docker. For your testing purposes, you can uncomment the `ports` entry in `docker-compose.yml` file for the services you want. 
 
