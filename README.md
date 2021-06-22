@@ -102,7 +102,7 @@ server, eg, `http://xpresso.yourdomain.com/`.
   * `databases.env` for the mysql root password, and Xpresso's database user `xpresso_admin` and its password. 
   * `elasticsearch.env` for custom changes on the elasticsearch cluster.
 * Make sure `xpresso_admin` password is the same across all these files
-  * `env/databases.env`
+  * `env/database.env`
   * `initializers/docker-entrypoint-initdb.d/1-user.sql`
   * `initializers/settings.yml`
   * `etc/mgmt_settings.py`
