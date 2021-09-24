@@ -14,6 +14,8 @@ common:
   CELERY_BROKER_HOST: cache
   CELERY_BROKER_PORT: 6379
   CELERY_BROKER_TRANSPORT: redis
+  CELERY_BROKER_PASSWORD: abc1234
+  CELERY_REDIS_PASSWORD: abc1234
   CELERY_BROKER_TRANSPORT_OPTIONS:
     fanout_patterns: true
     fanout_prefix: true
@@ -62,6 +64,7 @@ common:
     DB: 0
     HOST: cache
     PORT: 6379
+    PASSWORD: abc1234
   REST_FRAMEWORK:
     DATETIME_FORMAT: '%Y-%m-%dT%H:%M:%S.%fZ'
     DEFAULT_PAGINATION_CLASS: rest_framework.pagination.LimitOffsetPagination
@@ -347,7 +350,8 @@ microservices:
           NAME: s3_resources
   results:
     description: 'A service for viewing run results and associated data'
-    url: http://results2:8000/results/api/
+    url: http://apigateway:8000/api/
+#    url: http://xpresso-dev-2.cisco.com/api/
     settings:
       ARCHIVE_CACHE_RETENTION_DAYS: 7
       CACHED_RESULT_FILE: parsed_script.json
