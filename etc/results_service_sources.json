@@ -1,0 +1,12 @@
+{
+	"xpresso_external.com": {
+        "automation_token": "Jwt eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uX2lkIjoic2Vzc2lvbnM6N2Y2NTUxZTYtMDE4Yi00M2FkLTgyMTQtNTMxYTU2OTY3YjVlIiwiZXhwIjo0NzU3OTUyNDU3LCJ1c2VybmFtZSI6ImFkbWluIiwib3JpZ19pYXQiOjE2MDQzNTI0NTcsInRva2VuX3R5cGUiOiJhdXRvbWF0aW9uLXRva2VuIn0.GXjjmdbkUXpIc6eVg5AqL_YdbwiP1KzKD111ULjG2kd-u5l5qKZ8iXK3QTyE2l8UQTiy8vuhj18GntQ9ZhNmisNBjx1Mzvpu7ne0gmPNr6-43SLbEgmWLqpa9tz6jPl_414DF5i7YLGu8KmcaQCRcXIkZcOEdIvsCikR9gcbxndjlTN5YGys1ABfmJZuGMNInFq_v2aT6k9ZPbQeWKRG-v_MXPWUQIrD76SQUjmzntLd8rWyaFHC42bjPp8FF2OTV7j7jeBYQHLxC6mPqTtxMGR31AlXYbZsqstHq6UI3z3_1_pYGXnqKXPq8pA1d959Qlvcjeqz62abVZhLTacR_g",
+        "requests": {
+            "url": "http://requests:8000/requests/api/"
+        },
+        "history": {
+            "url": "http://history:8000/history/api/"
+        }
+    }
+
+}

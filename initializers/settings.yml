@@ -350,8 +350,7 @@ microservices:
           NAME: s3_resources
   results:
     description: 'A service for viewing run results and associated data'
-    url: http://apigateway:8000/api/
-#    url: http://xpresso-dev-2.cisco.com/api/
+    url: http://results2:8000/results/api/
     settings:
       ARCHIVE_CACHE_RETENTION_DAYS: 7
       CACHED_RESULT_FILE: parsed_script.json

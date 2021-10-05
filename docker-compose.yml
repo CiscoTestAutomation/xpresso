@@ -24,6 +24,7 @@ services:
     image: redis:3.2
     hostname: cache
     restart: always
+    command: redis-server --requirepass ${REDIS_PASS}
     volumes:
       - ${DATA_DIR}/cache:/data
     # - /etc/localtime:/etc/localtime:ro
@@ -749,6 +750,7 @@ services:
       - ${DATA_DIR}/archives/zipped:/s3/archives/zipped
       - ${DATA_DIR}/copyservice/archives/zipped:/s3/copyservice/archives/zipped
       - ${LOGS_DIR}/results2:/s3/logs
+      - ./etc/results_service_sources.json:/s3/etc/sources.json
     # - /etc/localtime:/etc/localtime:ro
     # - /etc/timezone:/etc/timezone:ro
     # ports:
@@ -1112,13 +1114,13 @@ services:
       SERVICE_LOGS_DIR: /s3/logs
       HISTORY_SERVICE_URL: http://history:8000/history/api/
       MGMT_SERVICE_URL: http://management:8000/management/api/
-      IMAGE_LOG_DIR: /s3/data
       REDIS_HOST: cache
       WS_HOST: wsgateway
       WS_PORT: '8000'
       RESULT_SERVICE_URL: ${ADVERTISED_URL}
       RESULTS_ENDPOINT: api/v1/upload/results
       IMAGE_LOG_DIR: /s3/data
+      REDIS_PASS: ${REDIS_PASS}
     volumes:
       - ${DATA_DIR}/controller:/s3/data
       - ${LOGS_DIR}/controller:/s3/logs
@@ -1325,6 +1327,7 @@ services:
     restart: always
     environment:
       REDIS_HOST: cache
+      REDIS_PASS: ${REDIS_PASS}
       SERVICE_LOGS_DIR: /taas/logs
     volumes:
       - ${LOGS_DIR}/wsgateway:/taas/logs
