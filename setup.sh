@@ -47,12 +47,12 @@ chmod 777 -R  data
 
 echo -e "${YLW}Warning:${NC}";
 echo -e "${YLW}Elasticsearch uses a mmapfs directory by default to store its indices. The default operating system limits on mmap counts is likely to be too low, which may result in out of memory exceptions. \nVisit: https://www.elastic.co/guide/en/elasticsearch/reference/master/_maximum_map_count_check.html${NC}";
-echo -e "${RED}Writing 'sysctl -w vm.max_map_count=262144' to '/etc/sysctl.conf'${NC}";
+echo -e "${RED}Writing 'vm.max_map_count=262144' to '/etc/sysctl.conf'${NC}";
 
 while true; do
     read -p "Do you wish to edit /etc/sysctl.conf?" yn
     case $yn in
-        [Yy]* ) sed -i '/max_map_count/d' /etc/sysctl.conf; echo 'sysctl -w vm.max_map_count=262144' >> /etc/sysctl.conf; echo "file written"; break;;
+        [Yy]* ) sed -i '/max_map_count/d' /etc/sysctl.conf; echo 'vm.max_map_count=262144' >> /etc/sysctl.conf; echo "file written"; break;;
         [Nn]* ) break;;
         * ) echo "Please answer yes or no.";;
     esac
